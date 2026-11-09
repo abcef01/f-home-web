@@ -1,11 +1,10 @@
 ﻿/**
  * 后端接口封装
  * ------------------------------------------------------------
- * 地址来自 Vercel 的环境变量 VITE_API_BASE；
- * 本地开发时写在 .env.local 里（Vite 会自动读）。
- * 没配的话默认连本地 3000。
+ * 默认连线上后端；本地开发时在 .env.local 里写
+ * VITE_API_BASE=http://localhost:3000 覆盖即可。
  */
-const RAW = (import.meta.env.VITE_API_BASE || 'http://localhost:3000').trim();
+const RAW = (import.meta.env.VITE_API_BASE || 'https://f-home-api.onrender.com').trim();
 const BASE = RAW.replace(/\/+$/, '');
 
 async function request(path, options = {}) {
