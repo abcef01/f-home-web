@@ -2275,3 +2275,34 @@ body[data-surface="glass"] .stat-strip { overflow: hidden; }
   color: var(--muted); font-size: 15px; line-height: 1; padding: 2px 4px;
 }
 .conv-del:hover { color: #b4553f; }
+
+/* =========================================================
+   第八章：对话参数（人设 / 温度 / 上下文）
+   ========================================================= */
+.param-box { display: flex; flex-direction: column; gap: 8px; }
+.param-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  border: 1px solid var(--line-2); background: transparent; cursor: pointer;
+  padding: 10px 12px; font-family: var(--font-ui); font-size: 11px;
+  color: var(--ink-2); border-radius: 2px; letter-spacing: 0.04em;
+}
+.chev2 { display: inline-block; transition: transform 0.2s ease; color: var(--muted); }
+.chev2.up { transform: rotate(90deg); }
+.param-label {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-ui); font-size: 10px; letter-spacing: 0.08em;
+  color: var(--muted); margin-top: 6px;
+}
+.param-val { color: var(--accent-deep); font-variant-numeric: tabular-nums; }
+.param-textarea {
+  width: 100%; box-sizing: border-box; resize: vertical;
+  border: 1px solid var(--line-2); border-radius: 2px; background: transparent;
+  padding: 10px 12px; font-family: inherit; font-size: 12px; line-height: 1.85;
+  color: var(--ink); outline: none;
+}
+.param-save {
+  margin-top: 8px; align-self: flex-start; cursor: pointer;
+  background: var(--ink); color: var(--paper); border: 0;
+  padding: 9px 22px; border-radius: 2px;
+  font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.1em;
+}

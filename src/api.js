@@ -127,3 +127,8 @@ export const conversations = {
     request('/api/conversations/' + id, { method: 'PATCH', body: JSON.stringify({ title }) }),
   remove: (id) => request('/api/conversations/' + id, { method: 'DELETE' })
 };
+
+export const chatSettings = {
+  get: () => request('/api/settings/chat'),
+  save: (params) => request('/api/settings/chat', { method: 'PUT', body: JSON.stringify(params) })
+};
