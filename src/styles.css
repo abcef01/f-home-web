@@ -2148,3 +2148,45 @@ body[data-surface="glass"] .stat-strip { overflow: hidden; }
   .phone::after { display: none; }
   .statusbar { padding-top: env(safe-area-inset-top); height: calc(50px + env(safe-area-inset-top)); }
 }
+
+/* =========================================================
+   第七章：真实的对话界面与模型选择
+   ========================================================= */
+.composer .field input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--ink);
+  min-width: 0;
+}
+.composer .field input::placeholder { color: var(--muted); }
+.send-btn:disabled { opacity: 0.4; cursor: default; }
+
+.chat-empty {
+  margin: auto;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 2;
+  letter-spacing: 0.04em;
+  padding: 40px 20px;
+}
+
+.model-picker { display: flex; flex-direction: column; gap: 10px; }
+.model-list { display: flex; flex-wrap: wrap; gap: 6px; max-height: 210px; overflow-y: auto; }
+.model-chip {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  padding: 6px 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.model-chip.on { background: var(--accent-soft); border-color: transparent; color: var(--accent-deep); }
+.seg button:disabled { opacity: 0.35; cursor: not-allowed; }

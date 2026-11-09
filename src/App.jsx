@@ -41,9 +41,11 @@ function load() {
 
 export default function App() {
   const [settings, setSettings] = useState(load);
-  const [screen, setScreen] = useState(() =>
-    window.location.hash === '#home' ? 'home' : 'opening'
-  );
+  const KNOWN = ['object', 'home', 'chat', 'diary', 'aerie', 'settings', 'opening'];
+  const [screen, setScreen] = useState(() => {
+    const h = (window.location.hash || '').replace('#', '');
+    return KNOWN.includes(h) && h !== 'object' ? h : 'opening';
+  });
 
   const update = (patch) => setSettings((s) => ({ ...s, ...patch }));
 

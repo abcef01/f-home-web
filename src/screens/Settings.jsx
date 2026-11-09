@@ -1,4 +1,5 @@
-import React from 'react';
+﻿import React from 'react';
+import ModelPicker from '../components/ModelPicker.jsx';
 
 const THEMES = [
   ['cream', '#B08A6A', '素色奶霜'],
@@ -34,6 +35,11 @@ export default function Settings({ settings, update, onGo }) {
       <div className="set-head">
         <div className="set-title">设置</div>
         <div className="set-sub">这个家的样子，由你决定。</div>
+      </div>
+
+      <div className="group">
+        <div className="gl">模型</div>
+        <ModelPicker />
       </div>
 
       <div className="group">
