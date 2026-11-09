@@ -9,6 +9,8 @@ import Rituals from './screens/Rituals.jsx';
 import Album from './screens/Album.jsx';
 import Mail from './screens/Mail.jsx';
 import Games from './screens/Games.jsx';
+import Lock from './components/Lock.jsx';
+import { authApi } from './api.js';
 
 const DEFAULTS = {
   theme: 'cream',
@@ -41,6 +43,19 @@ function load() {
 
 export default function App() {
   const [settings, setSettings] = useState(load);
+  /* 口令锁：checking -> ok / locked */
+  const [authState, setAuthState] = useState('checking');
+
+  useEffect(() => {
+    let alive = true;
+    authApi
+      .check()
+      .then((r) => alive && setAuthState(r.ok ? 'ok' : 'locked'))
+      .catch(() => alive && setAuthState('locked'));
+    return () => {
+      alive = false;
+    };
+  }, []);
   const KNOWN = ['object', 'home', 'chat', 'diary', 'aerie', 'settings', 'opening'];
   const [screen, setScreen] = useState(() => {
     const h = (window.location.hash || '').replace('#', '');
@@ -124,6 +139,9 @@ export default function App() {
   ];
 
   const isTab = tabs.some((t) => t.id === screen);
+
+  if (authState === 'locked') return <Lock onUnlock={() => setAuthState('ok')} />;
+  if (authState === 'checking') return <div className="boot-blank" />;
 
   return (
     <>

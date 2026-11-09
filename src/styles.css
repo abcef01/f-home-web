@@ -2306,3 +2306,48 @@ body[data-surface="glass"] .stat-strip { overflow: hidden; }
   padding: 9px 22px; border-radius: 2px;
   font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.1em;
 }
+
+/* =========================================================
+   口令锁
+   ========================================================= */
+.boot-blank { min-height: 100vh; background: var(--paper); }
+
+.lock-screen {
+  min-height: 100vh; min-height: 100dvh;
+  display: grid; place-items: center;
+  background: var(--paper);
+  padding: 24px;
+}
+.lock-inner { width: 100%; max-width: 300px; text-align: center; }
+.lock-mark {
+  width: 54px; height: 54px; margin: 0 auto 22px;
+  display: grid; place-items: center;
+  border: 1px solid var(--line-2); border-radius: 50%;
+  color: var(--ink);
+}
+.lock-mark svg { width: 26px; height: 26px; stroke-width: 1.05; }
+.lock-title {
+  font-family: var(--font-display); font-style: italic;
+  font-size: 26px; letter-spacing: 0.02em; color: var(--ink);
+}
+.lock-sub {
+  margin-top: 10px; font-size: 12px; line-height: 2;
+  color: var(--muted); letter-spacing: 0.04em;
+}
+.lock-input {
+  width: 100%; box-sizing: border-box; margin-top: 26px;
+  padding: 12px 14px; border: 1px solid var(--line-2); border-radius: 2px;
+  background: transparent; color: var(--ink);
+  font-family: inherit; font-size: 13px; letter-spacing: 0.2em;
+  text-align: center; outline: none;
+}
+.lock-input:focus { border-color: var(--accent); }
+.lock-btn {
+  width: 100%; margin-top: 10px; padding: 11px 0;
+  background: var(--ink); color: var(--paper); border: 0; border-radius: 2px;
+  font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.14em;
+  cursor: pointer;
+}
+.lock-btn:disabled { opacity: 0.4; cursor: default; }
+.lock-err { margin-top: 12px; font-size: 11.5px; color: #b4553f; }
+.lock-note { margin-top: 26px; font-size: 10.5px; line-height: 1.9; color: var(--muted); opacity: 0.8; }

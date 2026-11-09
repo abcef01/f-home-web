@@ -1,17 +1,57 @@
-﻿/**
+/**
  * 后端接口封装
  * ------------------------------------------------------------
  * 默认连线上后端；本地开发时在 .env.local 里写
  * VITE_API_BASE=http://localhost:3000 覆盖即可。
+ *
+ * 所有请求都会带上口令令牌（登录后存在 localStorage）。
  */
 const RAW = (import.meta.env.VITE_API_BASE || 'https://f-home-api.onrender.com').trim();
 const BASE = RAW.replace(/\/+$/, '');
 
+const TOKEN_KEY = 'bh_token';
+
+export const auth = {
+  get token() {
+    try {
+      return localStorage.getItem(TOKEN_KEY) || '';
+    } catch {
+      return '';
+    }
+  },
+  set token(v) {
+    try {
+      if (v) localStorage.setItem(TOKEN_KEY, v);
+      else localStorage.removeItem(TOKEN_KEY);
+    } catch {
+      /* 隐私模式下不可用 */
+    }
+  },
+  clear() {
+    this.token = '';
+  }
+};
+
+function headers(extra = {}) {
+  const h = { 'Content-Type': 'application/json', ...extra };
+  if (auth.token) h.Authorization = 'Bearer ' + auth.token;
+  return h;
+}
+
+function authError() {
+  const e = new Error('需要口令');
+  e.code = 'AUTH';
+  return e;
+}
+
 async function request(path, options = {}) {
   const res = await fetch(BASE + path, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options
+    ...options,
+    headers: headers(options.headers || {})
   });
+  /* 登录接口的 401 是「口令不对」，要原样抛出；其他 401 才代表需要重新解锁 */
+  if (res.status === 401 && !path.startsWith('/api/auth/login')) throw authError();
+
   const text = await res.text();
   let json = null;
   try {
@@ -52,6 +92,12 @@ export const api = {
     })
 };
 
+export const authApi = {
+  check: () => request('/api/auth/check'),
+  login: (passphrase) =>
+    request('/api/auth/login', { method: 'POST', body: JSON.stringify({ passphrase }) })
+};
+
 /* ============================================================
    流式对话（SSE）
    ------------------------------------------------------------
@@ -72,10 +118,12 @@ export async function chatStream({
 }) {
   const res = await fetch(BASE + '/api/chat/stream', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: headers(),
     body: JSON.stringify({ conversationId, message, channel, model }),
     signal
   });
+
+  if (res.status === 401) throw authError();
 
   if (!res.ok || !res.body) {
     const t = await res.text().catch(() => '');
