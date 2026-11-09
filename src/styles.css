@@ -2190,3 +2190,88 @@ body[data-surface="glass"] .stat-strip { overflow: hidden; }
 }
 .model-chip.on { background: var(--accent-soft); border-color: transparent; color: var(--accent-deep); }
 .seg button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* =========================================================
+   第八章：流式输出 / 会话列表
+   ========================================================= */
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+.icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.2; }
+.chat-actions { display: flex; align-items: center; gap: 4px; }
+
+.bubble.streaming::after {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 12px;
+  margin-left: 2px;
+  vertical-align: -1px;
+  background: var(--accent-deep);
+  opacity: 0.55;
+  animation: caret 1s steps(2) infinite;
+}
+@keyframes caret { 0%, 50% { opacity: 0.55; } 50.01%, 100% { opacity: 0; } }
+
+.dots { display: inline-flex; gap: 4px; align-items: center; padding: 2px 0; }
+.dots i {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--muted);
+  animation: dotpulse 1.2s infinite ease-in-out;
+}
+.dots i:nth-child(2) { animation-delay: 0.15s; }
+.dots i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes dotpulse { 0%, 80%, 100% { opacity: 0.25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-2px); } }
+
+.thinking-hint {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-style: italic;
+  opacity: 0.75;
+}
+
+.send-btn.stop { background: var(--accent-soft); }
+.send-btn.stop svg { stroke: none; }
+
+.sheet-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  padding: 4px 2px 12px;
+}
+
+.conv-list { display: flex; flex-direction: column; max-height: 46vh; overflow-y: auto; }
+.conv-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 2px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+.conv-row.on .conv-title { color: var(--accent-deep); }
+.conv-title {
+  flex: 1;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.conv-time { font-family: var(--font-ui); font-size: 9.5px; color: var(--muted); }
+.conv-del {
+  border: 0; background: none; cursor: pointer;
+  color: var(--muted); font-size: 15px; line-height: 1; padding: 2px 4px;
+}
+.conv-del:hover { color: #b4553f; }
