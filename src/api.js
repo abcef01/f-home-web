@@ -194,7 +194,7 @@ export const factsApi = {
 
 export const callApi = {
   start: (payload) => request('/api/call/start', { method: 'POST', body: JSON.stringify(payload || {}) }),
-  turn: (text) => request('/api/call/turn', { method: 'POST', body: JSON.stringify({ text }) }),
+  turn: (text, farewell) => request('/api/call/turn', { method: 'POST', body: JSON.stringify({ text, farewell: !!farewell }) }),
   end: () => request('/api/call/end', { method: 'POST', body: '{}' }),
   current: () => request('/api/call').then((r) => r.call),
   invite: () => request('/api/call/invite', { method: 'POST', body: '{}' })

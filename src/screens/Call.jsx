@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { callApi } from '../api.js';
 import { speak, stopSpeak, listenStream, listenSupported } from '../lib/speech.js';
 
@@ -117,6 +117,14 @@ export default function Call({ voice = {}, onClose }) {
             await new Promise((res) => setTimeout(res, Math.min(20000, 900 + r.reply.length * 200)));
           }
           if (r.hangUp) {
+            /* 万一它没好好告别，补一句再挂 */
+            const bye = /拜拜|晚安|挂了|晚安啦|明儿见|回头聊|早点睡|快去睡/;
+            if (r.reply && !bye.test(r.reply)) {
+              const extra = '我挂了啊，拜拜。';
+              setLines((l) => [...l, { role: 'ta', text: extra }]);
+              speak(extra, { rate: voice.rate || 1, voiceName: voice.name || '' });
+              await new Promise((res) => setTimeout(res, 2200));
+            }
             setPhase('ending');
             busyRef.current = false;
             finish();
@@ -150,12 +158,26 @@ export default function Call({ voice = {}, onClose }) {
     }
   }
 
-  function hangUp() {
-    if (phase === 'talking') {
-      say('那我先挂了。').then(finish);
-    } else {
-      finish();
+  async function hangUp() {
+    if (phase !== 'talking') return finish();
+
+    /* 交给它说最后一句，而不是由界面硬切 */
+    recRef.current?.stop();
+    recRef.current = null;
+    stopSpeak();
+    setPhase('ending');
+    try {
+      const r = await callApi.turn('（我这边要挂电话了）', true);
+      if (r.reply) {
+        setLines((l) => [...l, { role: 'me', text: '那我先挂了。' }]);
+        setLines((l) => [...l, { role: 'ta', text: r.reply }]);
+        speak(r.reply, { rate: voice.rate || 1, voiceName: voice.name || '' });
+        await new Promise((res) => setTimeout(res, Math.min(20000, 900 + r.reply.length * 200)));
+      }
+    } catch {
+      /* 模型没回也照样挂 */
     }
+    finish();
   }
 
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
