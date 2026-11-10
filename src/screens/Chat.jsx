@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { api, chatStream, conversations as convApi } from '../api.js';
+import { api, conversations as convApi } from '../api.js';
 
 const NAME = 'Elliott';
 
@@ -9,20 +9,58 @@ function fmtTime(iso) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
-export default function Chat({ onGo }) {
+/* 单条消息（含可折叠的思考链） */
+function Message({ m, showAvatars }) {
+  const [open, setOpen] = useState(false);
+  const mine = m.role === 'user';
+  const reasoning = m.meta?.reasoning;
+
+  return (
+    <>
+      <div className={'msg ' + (mine ? 'me' : 'them')}>
+        {showAvatars && !mine && (
+          <div className="avatar a-elliott s26">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#4C5C66" strokeWidth="1.1">
+              <path d="M16.5 15.4A7.2 7.2 0 0 1 8.6 5.2a7.4 7.4 0 1 0 9.2 9.3c-.5.1-1 .2-1.3.9Z" />
+            </svg>
+          </div>
+        )}
+        <div className="bubble-stack">
+          <div className="bubble">{m.content}</div>
+          <div className="meta">
+            {fmtTime(m.created_at)}
+            {mine ? ' · 你' : m.model ? ` · ${m.model}${m.tokens ? ` · ${m.tokens} tokens` : ''}` : ''}
+          </div>
+        </div>
+      </div>
+
+      {reasoning && (
+        <div className={'trace' + (open ? ' open' : '')}>
+          <button className="trace-head" onClick={() => setOpen((v) => !v)}>
+            <svg className="chev" viewBox="0 0 24 24">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+            <span>{open ? '收起它的思考' : '看看它刚才在想什么'}</span>
+          </button>
+          <div className="trace-body">
+            <div className="trace-line muted">{reasoning}</div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+export default function Chat({ onGo, showAvatars }) {
   const [messages, setMessages] = useState([]);
   const [convId, setConvId] = useState(null);
   const [convList, setConvList] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
-  const [streamText, setStreamText] = useState('');
-  const [thinking, setThinking] = useState('');
   const [error, setError] = useState('');
-  const [traceOpen, setTraceOpen] = useState(false);
   const [sheet, setSheet] = useState(null); // 'profile' | 'conversations' | null
   const [loaded, setLoaded] = useState(false);
   const listRef = useRef(null);
-  const abortRef = useRef(null);
 
   /* 打开时加载历史 */
   useEffect(() => {
@@ -39,7 +77,7 @@ export default function Chat({ onGo }) {
           if (alive) setMessages(history);
         }
       } catch (e) {
-        if (alive) setError('连不上后端：' + e.message);
+        if (alive) setError(e.message);
       } finally {
         if (alive) setLoaded(true);
       }
@@ -52,7 +90,7 @@ export default function Chat({ onGo }) {
   useEffect(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [messages, streamText, sending]);
+  }, [messages, sending]);
 
   async function send() {
     const text = input.trim();
@@ -60,66 +98,24 @@ export default function Chat({ onGo }) {
     setInput('');
     setError('');
     setSending(true);
-    setStreamText('');
-    setThinking('');
 
     const optimistic = { id: 'tmp-' + Date.now(), role: 'user', content: text, created_at: new Date().toISOString() };
     setMessages((m) => [...m, optimistic]);
 
-    let acc = '';
-    let reason = '';
-    let finalReply = null;
-
     try {
-      await chatStream({
-        conversationId: convId,
-        message: text,
-        onMeta: (ev) => {
-          setConvId(ev.conversationId);
-          setMessages((m) => m.map((x) => (x.id === optimistic.id ? ev.userMessage : x)));
-        },
-        onReasoning: (t) => {
-          reason += t;
-          setThinking(reason);
-        },
-        onDelta: (t) => {
-          acc += t;
-          setStreamText(acc);
-        },
-        onDone: (ev) => {
-          finalReply = { ...ev.reply, meta: { ...(ev.reply?.meta || {}), reasoning: reason || null } };
-        }
-      });
-
-      if (finalReply) {
-        setMessages((m) => [...m, finalReply]);
-        convApi.list().then(setConvList).catch(() => {});
-      }
+      const res = await api.chat({ conversationId: convId, message: text });
+      setConvId(res.conversationId);
+      setMessages((m) => [...m.filter((x) => x.id !== optimistic.id), res.userMessage, res.reply]);
+      convApi.list().then(setConvList).catch(() => {});
     } catch (e) {
-      setError(e.message);
       setMessages((m) => m.filter((x) => x.id !== optimistic.id));
+      setError(e.message);
     } finally {
       setSending(false);
-      setStreamText('');
-      setThinking('');
-      abortRef.current = null;
     }
   }
 
-  function stop() {
-    abortRef.current?.abort();
-    setSending(false);
-    if (streamText) {
-      setMessages((m) => [
-        ...m,
-        { id: 'stopped-' + Date.now(), role: 'assistant', content: streamText + '（已打断）', created_at: new Date().toISOString() }
-      ]);
-    }
-    setStreamText('');
-    setThinking('');
-  }
-
-  async function newConversation() {
+  function newConversation() {
     setSheet(null);
     setConvId(null);
     setMessages([]);
@@ -151,9 +147,6 @@ export default function Chat({ onGo }) {
     }
   }
 
-  const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant');
-  const thinkingLive = sending && thinking && !streamText;
-
   return (
     <>
       <div className="chat-bg">
@@ -178,7 +171,7 @@ export default function Chat({ onGo }) {
             <div className="chat-name">{NAME}</div>
             <div className="chat-sub">
               <i className="sdot" />
-              {sending ? (thinkingLive ? '正在想…' : '正在说…') : '在窗边看雨 · 心情 安静'}
+              {sending ? '正在想…' : '在窗边看雨 · 心情 安静'}
             </div>
           </div>
         </div>
@@ -206,50 +199,19 @@ export default function Chat({ onGo }) {
         )}
 
         {messages.map((m) => (
-          <div className={'msg ' + (m.role === 'user' ? 'me' : 'them')} key={m.id}>
-            <div className="bubble-stack">
-              <div className="bubble">{m.content}</div>
-              <div className="meta">
-                {fmtTime(m.created_at)}
-                {m.role === 'user' ? ' · 你' : m.model ? ` · ${m.model}${m.tokens ? ` · ${m.tokens} tokens` : ''}` : ''}
-              </div>
-            </div>
-          </div>
+          <Message key={m.id} m={m} showAvatars={showAvatars} />
         ))}
 
-        {/* 流式输出中 */}
         {sending && (
           <div className="msg them">
             <div className="bubble-stack">
-              {streamText ? (
-                <div className="bubble streaming">{streamText}</div>
-              ) : (
-                <div className="bubble">
-                  <span className="dots">
-                    <i />
-                    <i />
-                    <i />
-                  </span>
-                </div>
-              )}
-              {thinking && !streamText && (
-                <div className="meta thinking-hint">在想：{thinking.slice(-40)}</div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* 上一轮的思考链 */}
-        {!sending && lastAssistant?.meta?.reasoning && (
-          <div className={'trace' + (traceOpen ? ' open' : '')}>
-            <button className="trace-head" onClick={() => setTraceOpen((v) => !v)}>
-              <svg className="chev" viewBox="0 0 24 24">
-                <path d="M9 6l6 6-6 6" />
-              </svg>
-              <span>看看它刚才在想什么</span>
-            </button>
-            <div className="trace-body">
-              <div className="trace-line muted">{lastAssistant.meta.reasoning}</div>
+              <div className="bubble">
+                <span className="dots">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </div>
             </div>
           </div>
         )}
@@ -278,19 +240,11 @@ export default function Chat({ onGo }) {
             }}
           />
         </div>
-        {sending ? (
-          <button className="send-btn stop" onClick={stop} title="停">
-            <svg viewBox="0 0 24 24">
-              <rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor" stroke="none" />
-            </svg>
-          </button>
-        ) : (
-          <button className="send-btn" onClick={send} disabled={!input.trim()}>
-            <svg viewBox="0 0 24 24">
-              <path d="M12 19V5M6 11l6-6 6 6" />
-            </svg>
-          </button>
-        )}
+        <button className="send-btn" onClick={send} disabled={sending || !input.trim()}>
+          <svg viewBox="0 0 24 24">
+            <path d="M12 19V5M6 11l6-6 6 6" />
+          </svg>
+        </button>
       </div>
 
       {sheet === 'conversations' && (

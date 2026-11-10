@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Opening from './Opening.jsx';
 import Home from './screens/Home.jsx';
 import Chat from './screens/Chat.jsx';
@@ -108,6 +108,7 @@ export default function App() {
         <Chat
           glass={chatGlass}
           me={me}
+          showAvatars={settings.showAvatars}
           patMe={settings.patMe}
           patTa={settings.patTa}
           onGo={setScreen}
