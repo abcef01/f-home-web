@@ -462,7 +462,7 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
             ref={inputRef}
             rows={1}
             value={input}
-            placeholder="说点什么…（Shift+Enter 换行）"
+            placeholder="说点什么…"
             onChange={(e) => {
               setInput(e.target.value);
               const el = e.target;
