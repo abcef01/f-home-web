@@ -176,6 +176,11 @@ export const conversations = {
   remove: (id) => request('/api/conversations/' + id, { method: 'DELETE' })
 };
 
+export const heartbeatApi = {
+  tick: () => request('/api/heartbeat'),
+  state: () => request('/api/state')
+};
+
 export const watchApi = {
   frame: (image, conversationId) =>
     request('/api/watch', { method: 'POST', body: JSON.stringify({ image, conversationId }) })

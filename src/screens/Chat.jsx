@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
-import { api, conversations as convApi, stickersApi, watchApi } from '../api.js';
+import { api, conversations as convApi, stickersApi, watchApi, heartbeatApi } from '../api.js';
 import AvatarImg from '../components/AvatarImg.jsx';
 
 const NAME = 'Elliott';
@@ -8,6 +8,17 @@ function fmtTime(iso) {
   if (!iso) return '';
   const d = new Date(iso);
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+/* 把积温的数值翻译成一句人话 */
+function moodLine(s) {
+  if (!s) return '在窗边看雨 · 心情 安静';
+  const { connection = 0, valence = 0, arousal = 0 } = s;
+  const mood = valence > 0.3 ? '心情不错' : valence < -0.3 ? '有点低落' : '心情平常';
+  if (connection >= 0.5) return `很想你 · ${mood}`;
+  if (connection >= 0.35) return `有点想你 · ${mood}`;
+  if (arousal > 0.4) return `静不下来 · ${mood}`;
+  return `在窗边看雨 · ${mood}`;
 }
 
 /* 单条消息（含可折叠的思考链） */
@@ -71,6 +82,7 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
   const [watching, setWatching] = useState(false);
   const [watchErr, setWatchErr] = useState('');
   const [denied, setDenied] = useState(new Set());
+  const [mood, setMood] = useState(null);
   const shareRef = useRef(null);
   const videoRef = useRef(null);
   const timerRef = useRef(null);
@@ -103,6 +115,34 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
 
   useEffect(() => {
     stickersApi.list().then(setStickers).catch(() => {});
+  }, []);
+
+  /* 心跳：每 90 秒问一次后端「他现在想说话吗」 */
+  useEffect(() => {
+    let alive = true;
+    const beat = async () => {
+      try {
+        const r = await heartbeatApi.tick();
+        if (alive && r.spoke) {
+          setMessages((m) => (m.some((x) => x.id === r.spoke.id) ? m : [...m, r.spoke]));
+        }
+      } catch {
+        /* 静默失败，不打扰 */
+      }
+      try {
+        const s = await heartbeatApi.state();
+        if (alive) setMood(s);
+      } catch {
+        /* 同上 */
+      }
+    };
+    const t = setTimeout(beat, 4000);
+    const iv = setInterval(beat, 90000);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+      clearInterval(iv);
+    };
   }, []);
 
   useEffect(() => {
@@ -268,7 +308,7 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
             <div className="chat-name">{NAME}</div>
             <div className="chat-sub">
               <i className="sdot" />
-              {sending ? '正在想…' : '在窗边看雨 · 心情 安静'}
+              {sending ? '正在想…' : moodLine(mood)}
             </div>
           </div>
         </div>
