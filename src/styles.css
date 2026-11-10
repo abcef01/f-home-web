@@ -2562,3 +2562,26 @@ body.show-avatars .msg.me { flex-direction: row; }
 }
 .composer .field textarea::placeholder { color: var(--muted); font-size: 12.5px; }
 .composer .field { align-items: flex-end; }
+
+/* 「逛回来」的引用卡 */
+.surf-card {
+  margin-top: 2px;
+  padding: 10px 12px;
+  border-left: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--paper) 60%, transparent);
+  border-radius: 0 4px 4px 0;
+  max-width: 250px;
+}
+.surf-quote {
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.surf-from {
+  margin-top: 5px;
+  font-family: var(--font-ui);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}

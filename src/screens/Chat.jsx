@@ -34,6 +34,15 @@ function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAll
         <div className="bubble-stack">
           {m.content && m.content !== '[表情]' && <div className="bubble">{m.content}</div>}
           {m.meta?.sticker && <img className="sticker-msg" src={m.meta.sticker} alt="表情" />}
+          {m.meta?.surf && (
+            <div className="surf-card">
+              <div className="surf-quote">「{m.meta.surf.quote}」</div>
+              <div className="surf-from">
+                {m.meta.surf.title ? `${m.meta.surf.title} · ` : ''}
+                {m.meta.surf.source}
+              </div>
+            </div>
+          )}
           {m.meta?.watchRequest && !watching && !denied?.has(m.id) && (
             <div className="watch-ask">
               <span>他想看看你在做什么</span>
@@ -123,6 +132,9 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
         const r = await heartbeatApi.tick();
         if (alive && r.spoke) {
           setMessages((m) => (m.some((x) => x.id === r.spoke.id) ? m : [...m, r.spoke]));
+        }
+        if (alive && r.surfed) {
+          setMessages((m) => (m.some((x) => x.id === r.surfed.id) ? m : [...m, r.surfed]));
         }
       } catch {
         /* 静默失败，不打扰 */
