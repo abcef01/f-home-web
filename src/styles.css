@@ -2585,3 +2585,5 @@ body.show-avatars .msg.me { flex-direction: row; }
   letter-spacing: 0.06em;
   color: var(--muted);
 }
+
+.surf-from a { color: var(--accent-deep); text-decoration: none; border-bottom: 1px solid currentColor; }

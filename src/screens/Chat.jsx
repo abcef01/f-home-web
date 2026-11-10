@@ -36,10 +36,17 @@ function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAll
           {m.meta?.sticker && <img className="sticker-msg" src={m.meta.sticker} alt="表情" />}
           {m.meta?.surf && (
             <div className="surf-card">
-              <div className="surf-quote">「{m.meta.surf.quote}」</div>
+              <div className="surf-quote">{m.meta.surf.title}</div>
               <div className="surf-from">
-                {m.meta.surf.title ? `${m.meta.surf.title} · ` : ''}
                 {m.meta.surf.source}
+                {m.meta.surf.url && (
+                  <>
+                    {' · '}
+                    <a href={m.meta.surf.url} target="_blank" rel="noreferrer">
+                      看看
+                    </a>
+                  </>
+                )}
               </div>
             </div>
           )}
