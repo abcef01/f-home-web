@@ -6,7 +6,7 @@
  *   · /api/*：完全不碰，永远走网络（聊天必须实时）
  */
 
-const VERSION = 'bunny-v3';
+const VERSION = 'bunny-v4';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
@@ -30,6 +30,29 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+
+  /* 从系统分享面板发过来的图片：先存起来，再跳回聊天页 */
+  const shareUrl = new URL(request.url);
+  if (request.method === 'POST' && shareUrl.pathname === '/share-target') {
+    event.respondWith(
+      (async () => {
+        try {
+          const form = await request.formData();
+          const file = form.get('image');
+          const cache = await caches.open('share-target');
+          if (file && typeof file === 'object') {
+            await cache.put('/__shared__/image', new Response(file, { headers: { 'Content-Type': file.type || 'image/jpeg' } }));
+            await cache.put('/__shared__/name', new Response(file.name || 'shared.jpg'));
+          }
+        } catch (e) {
+          /* 拿不到就算了，页面那边会提示 */
+        }
+        return Response.redirect('/#shared', 303);
+      })()
+    );
+    return;
+  }
+
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);

@@ -136,6 +136,20 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
     stickersApi.list().then(setStickers).catch(() => {});
   }, []);
 
+  /* 系统分享进来的图，直接发出去 */
+  useEffect(() => {
+    const handler = () => {
+      const f = window.__bunnySharedFile;
+      if (f) {
+        window.__bunnySharedFile = null;
+        sendImage(f);
+      }
+    };
+    window.addEventListener('bunny-shared-image', handler);
+    if (window.__bunnySharedFile) handler();
+    return () => window.removeEventListener('bunny-shared-image', handler);
+  }, []);
+
   /* 心跳：每 90 秒问一次后端「他现在想说话吗」 */
   useEffect(() => {
     let alive = true;

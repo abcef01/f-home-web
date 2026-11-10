@@ -13,6 +13,7 @@ import Lock from './components/Lock.jsx';
 import InstallHint from './components/InstallHint.jsx';
 import { authApi, uiSettings, avatarsApi } from './api.js';
 import { startDeviceReporting } from './lib/device.js';
+import { takeSharedImage } from './lib/share.js';
 
 const DEFAULTS = {
   theme: 'cream',
@@ -86,6 +87,21 @@ export default function App() {
         setSettings((s) => ((v.savedAt || 0) > (s.savedAt || 0) ? { ...s, ...v } : s));
       })
       .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [authState]);
+
+  /* 从系统分享面板转进来的图片 */
+  useEffect(() => {
+    if (authState !== 'ok') return;
+    let alive = true;
+    takeSharedImage().then((file) => {
+      if (!alive || !file) return;
+      window.__bunnySharedFile = file;
+      setScreen('chat');
+      window.dispatchEvent(new Event('bunny-shared-image'));
+    });
     return () => {
       alive = false;
     };
