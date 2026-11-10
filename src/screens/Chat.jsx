@@ -99,6 +99,8 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
   const [watchErr, setWatchErr] = useState('');
   const [healthScanning, setHealthScanning] = useState(false);
   const [healthNote, setHealthNote] = useState('');
+  const [pill, setPill] = useState(null);
+  const [pillOpen, setPillOpen] = useState(false);
   const [denied, setDenied] = useState(new Set());
   const photoRef = useRef(null);
   const replyTimer = useRef(null);
@@ -341,6 +343,25 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
       setSending(false);
     }
   }
+  /* 药盒 */
+  useEffect(() => {
+    pillApi.get().then(setPill).catch(() => {});
+  }, []);
+
+  async function takePill(text) {
+    try {
+      const p = await pillApi.set(text);
+      setPill(p);
+      setPillOpen(false);
+    } catch (e) {
+      setError(e.message);
+    }
+  }
+
+  async function dropPill() {
+    await pillApi.clear().catch(() => {});
+    setPill(null);
+  }
   /* 读手环：共享屏幕 → 你切到华为运动健康 → 它自己截几张找数据 */
   async function startHealthScan() {
     setWatchErr('');
@@ -515,6 +536,33 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
         </div>
       )}
       {healthNote && <div className="watch-bar"><span>{healthNote}</span></div>}
+      {pill && (
+        <div className="pill-chip">
+          <span>💊 {pill.text}</span>
+          <button onClick={dropPill}>取消</button>
+        </div>
+      )}
+      {pillOpen && (
+        <div className="pill-sheet">
+          <div className="pill-hint">挑一颗，只对下一次回复生效，用完就没</div>
+          {[
+            ['别哄我', '这次别安慰我，别哄，直接说真话'],
+            ['说短点', '这次回复尽量短，最多两句话'],
+            ['别问我', '这次别向我提问，只说你自己想说的'],
+            ['你来讲', '这次你来起个话头，讲点你自己的事'],
+            ['骂醒我', '这次别顺着我，直接指出我在逃避什么'],
+            ['当陌生人', '这次用刚认识、还不太熟的语气跟我说话']
+          ].map(([label, text]) => (
+            <button key={label} className="pill-item" onClick={() => takePill(text)}>
+              <b>{label}</b>
+              <span>{text}</span>
+            </button>
+          ))}
+          <button className="pill-item" onClick={() => setPillOpen(false)}>
+            <b>算了</b>
+          </button>
+        </div>
+      )}
       {watchErr && <div className="watch-err">{watchErr}</div>}
       <video ref={videoRef} className="watch-video" muted playsInline />
 
@@ -528,6 +576,12 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
         </button>
         <input ref={photoRef} type="file" accept="image/*" style={{ display: 'none' }}
           onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) sendImage(f); }} />
+        <button className={'sticker-btn' + (pill ? ' on' : '')} onClick={() => setPillOpen((v) => !v)} title="药盒">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+            <rect x="4" y="9" width="16" height="9" rx="4.5" transform="rotate(-40 12 13.5)" />
+            <path d="M9.5 8.5l5 5" />
+          </svg>
+        </button>
         <button className="sticker-btn" onClick={() => setStickerSheet(true)} title="表情包">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
             <circle cx="12" cy="12" r="8" />

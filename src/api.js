@@ -192,6 +192,12 @@ export const factsApi = {
   remove: (id) => request('/api/facts/' + id, { method: 'DELETE' }).then((r) => r.facts || [])
 };
 
+export const pillApi = {
+  get: () => request('/api/pill').then((r) => r.pill),
+  set: (text) => request('/api/pill', { method: 'POST', body: JSON.stringify({ text }) }).then((r) => r.pill),
+  clear: () => request('/api/pill', { method: 'DELETE' })
+};
+
 export const memoryApi = {
   get: () => request('/api/memory'),
   decideCandidate: (id, accept) =>
