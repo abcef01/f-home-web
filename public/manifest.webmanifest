@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "Bunny's Home",
   "short_name": "Bunny",
   "description": "给 AI 一个家 —— 你和 Elliott 的私人空间",
@@ -14,7 +14,16 @@
     "method": "POST",
     "enctype": "multipart/form-data",
     "params": {
-      "files": [{ "name": "image", "accept": ["image/png", "image/jpeg", "image/webp"] }]
+      "files": [
+        {
+          "name": "image",
+          "accept": [
+            "image/png",
+            "image/jpeg",
+            "image/webp"
+          ]
+        }
+      ]
     }
   },
   "icons": [
