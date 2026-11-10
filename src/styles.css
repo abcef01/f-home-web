@@ -2671,3 +2671,31 @@ body.show-avatars .msg.me { flex-direction: row; }
   font-size: 11.5px; line-height: 1.85; color: var(--ink-3);
   white-space: pre-wrap;
 }
+
+/* 语音 */
+.voice-box { display: flex; flex-direction: column; gap: 8px; }
+.voice-select {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--line-2);
+  border-radius: 2px; background: transparent; color: var(--ink);
+  font-family: inherit; font-size: 12px; outline: none;
+}
+.speak-btn {
+  border: 0; background: none; cursor: pointer; padding: 2px 4px;
+  font-size: 9px; color: var(--muted); vertical-align: middle;
+}
+.speak-btn.on { color: var(--accent-deep); }
+
+/* 情绪皮肤：一层极淡的光，随它此刻的心情偏色 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    120% 80% at 50% 0%,
+    hsla(var(--mood-hue, 32), 60%, 55%, var(--mood-strength, 0.04)),
+    transparent 70%
+  );
+  transition: background 2.5s ease;
+}

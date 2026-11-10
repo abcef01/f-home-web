@@ -36,6 +36,7 @@ function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAll
           {m.meta?.sticker && <img className="sticker-msg" src={m.meta.sticker} alt="表情" />}
           {m.meta?.image && <img className="chat-image" src={m.meta.image} alt="图片" />}
           {m.meta?.thought && <ThoughtBlock text={m.meta.thought} />}
+          {speechSupported() && msgPlayable(m.content) && <SpeakButton text={m.content} voice={voice} />}
           {m.meta?.surf && (
             <div className="surf-card">
               <div className="surf-quote">{m.meta.surf.title}</div>
@@ -86,7 +87,7 @@ function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAll
   );
 }
 
-export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = false, watchEvery = 45 }) {
+export default function Chat({ voice = {}, onVoiceChange, onGo, showAvatars, avatars = {}, watchAllowed = false, watchEvery = 45 }) {
   const [messages, setMessages] = useState([]);
   const [convId, setConvId] = useState(null);
   const [input, setInput] = useState('');
@@ -102,6 +103,8 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
   const [healthNote, setHealthNote] = useState('');
   const [pill, setPill] = useState(null);
   const [pillOpen, setPillOpen] = useState(false);
+  const [listening, setListening] = useState(false);
+  const recRef = useRef(null);
   const [denied, setDenied] = useState(new Set());
   const photoRef = useRef(null);
   const replyTimer = useRef(null);
@@ -214,7 +217,12 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
   function appendReplies(list) {
     const items = (list || []).filter(Boolean);
     items.forEach((msg, i) => {
-      setTimeout(() => setMessages((m) => [...m, msg]), i * 750);
+      setTimeout(() => {
+        setMessages((m) => [...m, msg]);
+        if (voice?.auto && speechSupported()) {
+          speak(msg.content, { rate: voice.rate || 1, voiceName: voice.name || '' });
+        }
+      }, i * 750);
     });
     return items.length * 750;
   }
@@ -577,6 +585,18 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
         </button>
         <input ref={photoRef} type="file" accept="image/*" style={{ display: 'none' }}
           onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) sendImage(f); }} />
+        {listenSupported() && (
+          <button
+            className={'sticker-btn' + (listening ? ' on' : '')}
+            onClick={listening ? stopListening : startListening}
+            title={listening ? '松开结束' : '按住说话'}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <rect x="9" y="3.5" width="6" height="11" rx="3" />
+              <path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18v2.5" />
+            </svg>
+          </button>
+        )}
         <button className={'sticker-btn' + (pill ? ' on' : '')} onClick={() => setPillOpen((v) => !v)} title="药盒">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
             <rect x="4" y="9" width="16" height="9" rx="4.5" transform="rotate(-40 12 13.5)" />
@@ -682,5 +702,33 @@ function ThoughtBlock({ text }) {
       </button>
       {open && <div className="thought-body">{text}</div>}
     </div>
+  );
+}
+/* 这句话能不能念（表情包/图片/空的不念） */
+function msgPlayable(content) {
+  const t = String(content || '').replace(/\[\[[^\]]*\]\]/g, '').trim();
+  return t.length > 0 && !/^（.*）$/.test(t);
+}
+
+function SpeakButton({ text, voice }) {
+  const [on, setOn] = React.useState(false);
+  return (
+    <button
+      className={'speak-btn' + (on ? ' on' : '')}
+      onClick={() => {
+        if (on) {
+          stopSpeak();
+          setOn(false);
+        } else {
+          setOn(true);
+          speak(text, { rate: voice?.rate || 1, voiceName: voice?.name || '' });
+          /* 大概估个时长自动复位 */
+          setTimeout(() => setOn(false), Math.min(30000, String(text).length * 220));
+        }
+      }}
+      title={on ? '停' : '念给我听'}
+    >
+      {on ? '■' : '▶'}
+    </button>
   );
 }

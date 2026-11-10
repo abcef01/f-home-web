@@ -11,7 +11,7 @@ import Mail from './screens/Mail.jsx';
 import Games from './screens/Games.jsx';
 import Lock from './components/Lock.jsx';
 import InstallHint from './components/InstallHint.jsx';
-import { authApi, uiSettings, avatarsApi } from './api.js';
+import { authApi, uiSettings, avatarsApi, drivesApi } from './api.js';
 import { startDeviceReporting } from './lib/device.js';
 import { takeSharedImage } from './lib/share.js';
 
@@ -89,6 +89,42 @@ export default function App() {
       .catch(() => {});
     return () => {
       alive = false;
+    };
+  }, [authState]);
+
+  /* 情绪皮肤：界面随它此刻的状态轻轻变一点 */
+  useEffect(() => {
+    if (authState !== 'ok') return;
+    let alive = true;
+
+    const paint = async () => {
+      try {
+        const d = await drivesApi.get();
+        if (!alive || !d?.scores) return;
+        const { valence = 0, arousal = 0, grievance = 0, connection = 0 } = d.scores;
+
+        /* 高兴偏暖、难过偏冷、火气偏红 */
+        let hue = 32;
+        let strength = 0.04;
+        if (valence < -0.1) { hue = 210; strength = 0.05; }
+        if (grievance > 0.12) { hue = 205; strength = 0.06; }
+        if (valence > 0.1) { hue = 34; strength = 0.06; }
+        if (arousal > 0.25) { hue = 12; strength = 0.05; }
+        if (connection > 0.2) { hue = 340; strength = 0.04; }
+
+        const root = document.documentElement;
+        root.style.setProperty('--mood-hue', String(hue));
+        root.style.setProperty('--mood-strength', String(strength));
+      } catch {
+        /* 拿不到就保持原样 */
+      }
+    };
+
+    paint();
+    const t = setInterval(paint, 5 * 60 * 1000);
+    return () => {
+      alive = false;
+      clearInterval(t);
     };
   }, [authState]);
 
@@ -189,6 +225,8 @@ export default function App() {
       ),
       chat: (
         <Chat
+          voice={settings.voice || {}}
+          onVoiceChange={(v) => setSettings((s) => ({ ...s, voice: v }))}
           glass={chatGlass}
           me={me}
           showAvatars={settings.showAvatars}

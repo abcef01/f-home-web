@@ -6,6 +6,7 @@ import AvatarPicker from '../components/AvatarPicker.jsx';
 import NotifyToggle from '../components/NotifyToggle.jsx';
 import { api, auth } from '../api.js';
 import { factsApi, memoryApi } from '../api.js';
+import { speak, chineseVoices, onVoicesReady, speechSupported } from '../lib/speech.js';
 
 const THEMES = [
   ['cream', '#B08A6A', '素色奶霜'],
@@ -79,6 +80,11 @@ export default function Settings({ settings, update, onGo, onSave, saving, saveM
           关掉这个开关，他就不能看；聊天里他也能主动请求，你可以当场拒绝。
           共享时底部有停止键，浏览器顶部也有。
         </div>
+      </div>
+
+      <div className="group">
+        <div className="gl">声音</div>
+        <VoiceBox settings={settings} update={update} />
       </div>
 
       <div className="group">
@@ -393,6 +399,73 @@ function MemoryBox() {
         碎片自动提取，攒够几条会合并成事件；核心要你确认才会升级，永远不会被压缩掉。
       </div>
       {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
+    </div>
+  );
+}
+/* 它的声音 */
+function VoiceBox({ settings, update }) {
+  const voice = settings.voice || {};
+  const [voices, setVoices] = React.useState([]);
+
+  React.useEffect(() => {
+    if (!speechSupported()) return;
+    return onVoicesReady((list) => setVoices(chineseVoices()));
+  }, []);
+
+  function set(patch) {
+    update({ voice: { ...voice, ...patch } });
+  }
+
+  if (!speechSupported()) {
+    return <div className="hint-line">这个浏览器不支持语音合成。</div>;
+  }
+
+  return (
+    <div className="voice-box">
+      <div className="list-item">
+        <span className="t">新消息自动念</span>
+        <button
+          className={'toggle' + (voice.auto ? ' on' : '')}
+          onClick={() => set({ auto: !voice.auto })}
+          aria-label="自动朗读开关"
+        />
+      </div>
+
+      <div className="param-label">
+        语速 <span className="param-val">{(voice.rate || 1).toFixed(2)}×</span>
+      </div>
+      <input
+        className="range"
+        type="range"
+        min="0.7"
+        max="1.4"
+        step="0.05"
+        value={voice.rate || 1}
+        onChange={(e) => set({ rate: Number(e.target.value) })}
+      />
+
+      <div className="param-label">音色</div>
+      <select
+        className="voice-select"
+        value={voice.name || ''}
+        onChange={(e) => set({ name: e.target.value })}
+      >
+        <option value="">系统默认</option>
+        {voices.map((v) => (
+          <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>
+        ))}
+      </select>
+
+      <button
+        className="avatar-btn"
+        style={{ alignSelf: 'flex-start', marginTop: 6 }}
+        onClick={() => speak('嗯，我在。今天过得怎么样？', { rate: voice.rate || 1, voiceName: voice.name || '' })}
+      >
+        试听
+      </button>
+      <div className="hint-line">
+        用的是手机自带的语音，不花钱、离线也能用。音色取决于你系统里装了什么。
+      </div>
     </div>
   );
 }
