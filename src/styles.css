@@ -2622,3 +2622,9 @@ body.show-avatars .msg.me { flex-direction: row; }
   font-family: var(--font-ui); font-size: 10.5px; letter-spacing: 0.08em; cursor: pointer;
 }
 .fact-add button:disabled { opacity: 0.4; cursor: default; }
+
+/* 三层记忆 */
+.mem-box { display: flex; flex-direction: column; gap: 6px; }
+.mem-sub { font-size: 10.5px; letter-spacing: 0.08em; color: var(--muted); margin-top: 4px; }
+.mem-line { font-size: 11.5px; color: var(--ink-3); line-height: 1.6; padding-left: 2px; }
+.mem-cand { display: flex; flex-direction: column; gap: 6px; }

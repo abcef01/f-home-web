@@ -5,7 +5,7 @@ import StickerManager from '../components/StickerManager.jsx';
 import AvatarPicker from '../components/AvatarPicker.jsx';
 import NotifyToggle from '../components/NotifyToggle.jsx';
 import { api, auth } from '../api.js';
-import { factsApi } from '../api.js';
+import { factsApi, memoryApi } from '../api.js';
 
 const THEMES = [
   ['cream', '#B08A6A', '素色奶霜'],
@@ -79,6 +79,11 @@ export default function Settings({ settings, update, onGo, onSave, saving, saveM
           关掉这个开关，他就不能看；聊天里他也能主动请求，你可以当场拒绝。
           共享时底部有停止键，浏览器顶部也有。
         </div>
+      </div>
+
+      <div className="group">
+        <div className="gl">记忆</div>
+        <MemoryBox />
       </div>
 
       <div className="group">
@@ -314,6 +319,79 @@ function FactsBox() {
         <button onClick={add} disabled={busy || !text.trim()}>{busy ? '…' : '记住'}</button>
       </div>
       <div className="hint-line">这些会一直带给它，不会被记忆压缩掉。</div>
+      {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
+    </div>
+  );
+}
+/* 三层记忆：碎片 / 事件 / 核心，另有待确认的候选 */
+function MemoryBox() {
+  const [data, setData] = React.useState(null);
+  const [err, setErr] = React.useState('');
+  const [open, setOpen] = React.useState('');
+
+  React.useEffect(() => {
+    memoryApi.get().then(setData).catch((e) => setErr(e.message));
+  }, []);
+
+  async function decide(id, accept) {
+    try {
+      const r = await memoryApi.decideCandidate(id, accept);
+      setData((d) => ({ ...d, core: r.core, candidates: r.candidates }));
+    } catch (e) {
+      setErr(e.message);
+    }
+  }
+
+  async function drop(id) {
+    try {
+      const r = await memoryApi.removeCore(id);
+      setData((d) => ({ ...d, core: r.core }));
+    } catch (e) {
+      setErr(e.message);
+    }
+  }
+
+  if (!data) return <div className="hint-line">读取中…</div>;
+
+  const { candidates = [], core = [], events = [], fragments = [] } = data;
+
+  return (
+    <div className="mem-box">
+      {candidates.length > 0 && (
+        <div className="mem-cand">
+          <div className="mem-sub">它想记住这些，要吗？</div>
+          {candidates.map((c) => (
+            <div className="fact-row" key={c.id}>
+              <span>{c.text}</span>
+              <button onClick={() => decide(c.id, true)} title="记住">✓</button>
+              <button onClick={() => decide(c.id, false)} title="不要">×</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mem-sub">核心 · {core.length}</div>
+      {core.length === 0 && <div className="hint-line">还没有确认过的长期记忆。</div>}
+      {core.map((c) => (
+        <div className="fact-row" key={c.id}>
+          <span>{c.text}</span>
+          <button onClick={() => drop(c.id)} title="删除">×</button>
+        </div>
+      ))}
+
+      <div className="mem-sub" onClick={() => setOpen(open === 'e' ? '' : 'e')} style={{ cursor: 'pointer' }}>
+        事件 · {events.length} {open === 'e' ? '▾' : '▸'}
+      </div>
+      {open === 'e' && events.map((e) => <div className="mem-line" key={e.id}>{e.text}</div>)}
+
+      <div className="mem-sub" onClick={() => setOpen(open === 'f' ? '' : 'f')} style={{ cursor: 'pointer' }}>
+        碎片 · {fragments.length} {open === 'f' ? '▾' : '▸'}
+      </div>
+      {open === 'f' && fragments.map((f) => <div className="mem-line" key={f.id}>{f.text}</div>)}
+
+      <div className="hint-line">
+        碎片自动提取，攒够几条会合并成事件；核心要你确认才会升级，永远不会被压缩掉。
+      </div>
       {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
     </div>
   );
