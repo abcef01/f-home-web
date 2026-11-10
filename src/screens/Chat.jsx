@@ -99,6 +99,7 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
   const [watchErr, setWatchErr] = useState('');
   const [denied, setDenied] = useState(new Set());
   const photoRef = useRef(null);
+  const replyTimer = useRef(null);
   const [mood, setMood] = useState(null);
   const shareRef = useRef(null);
   const videoRef = useRef(null);
@@ -169,26 +170,42 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, sending]);
 
+  /* 连发：先只存，等你停手了再回 */
   async function send() {
     const text = input.trim();
     if (!text || sending) return;
     setInput('');
     setError('');
-    setSending(true);
 
     const optimistic = { id: 'tmp-' + Date.now(), role: 'user', content: text, created_at: new Date().toISOString() };
     setMessages((m) => [...m, optimistic]);
 
     try {
-      const res = await api.chat({ conversationId: convId, message: text });
+      const res = await api.chat({ conversationId: convId, message: text, storeOnly: true });
       setConvId(res.conversationId);
-      setMessages((m) => [...m.filter((x) => x.id !== optimistic.id), res.userMessage, res.reply]);
+      setMessages((m) => [...m.filter((x) => x.id !== optimistic.id), res.userMessage]);
+      scheduleReply(res.conversationId);
     } catch (e) {
       setMessages((m) => m.filter((x) => x.id !== optimistic.id));
       setError(e.message);
-    } finally {
-      setSending(false);
     }
+  }
+
+  /* 停顿 7 秒后才回；期间又发消息就重新计时 */
+  function scheduleReply(id) {
+    if (replyTimer.current) clearTimeout(replyTimer.current);
+    replyTimer.current = setTimeout(async () => {
+      setSending(true);
+      try {
+        const r = await api.respond(id);
+        if (r.reply) setMessages((m) => [...m, r.reply]);
+      } catch (e) {
+        setError(e.message);
+      } finally {
+        setSending(false);
+        replyTimer.current = null;
+      }
+    }, 7000);
   }
 
   async function sendSticker(url) {

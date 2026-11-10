@@ -87,11 +87,14 @@ export const api = {
   messages: (conversationId) =>
     request('/api/conversations/' + conversationId + '/messages').then((r) => r.messages),
 
-  chat: ({ conversationId, message, channel, model, sticker, image }) =>
+  chat: ({ conversationId, message, channel, model, sticker, image, storeOnly }) =>
     request('/api/chat', {
       method: 'POST',
-      body: JSON.stringify({ conversationId, message, channel, model, sticker, image })
-    })
+      body: JSON.stringify({ conversationId, message, channel, model, sticker, image, storeOnly })
+    }),
+
+  respond: (conversationId) =>
+    request('/api/respond', { method: 'POST', body: JSON.stringify({ conversationId }) })
 };
 
 export const authApi = {

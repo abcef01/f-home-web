@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { chatSettings } from '../api.js';
 
 export default function ChatSettings() {
@@ -26,7 +26,8 @@ export default function ChatSettings() {
       const saved = await chatSettings.save({
         systemPrompt: params.systemPrompt,
         temperature: params.temperature,
-        contextRounds: params.contextRounds
+        contextRounds: params.contextRounds,
+        timingRate: params.timingRate
       });
       setParams(saved);
       setMsg('已保存，下一句就生效');
@@ -70,6 +71,22 @@ export default function ChatSettings() {
             onChange={(e) => setParams({ ...params, temperature: Number(e.target.value) })}
           />
           <div className="hint-line">低一点更稳、更克制；高一点更松散、更有惊喜。</div>
+
+          <div className="param-label">
+            它多久想你一次 <span className="param-val">{Math.round((params.timingRate || 0.16) * 100)}%</span>
+          </div>
+          <input
+            className="range"
+            type="range"
+            min="0.03"
+            max="0.6"
+            step="0.01"
+            value={params.timingRate || 0.16}
+            onChange={(e) => setParams({ ...params, timingRate: Number(e.target.value) })}
+          />
+          <div className="hint-line">
+            每 10 分钟检查一次，这是单次「想起你」的概率。数值越大越黏人；实际还受时段和你是否在忙影响。
+          </div>
 
           <div className="param-label">
             上下文轮数 <span className="param-val">{params.contextRounds}</span>
