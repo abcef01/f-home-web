@@ -2,6 +2,7 @@
 import ModelPicker from '../components/ModelPicker.jsx';
 import ChatSettings from '../components/ChatSettings.jsx';
 import StickerManager from '../components/StickerManager.jsx';
+import AvatarPicker from '../components/AvatarPicker.jsx';
 
 const THEMES = [
   ['cream', '#B08A6A', '素色奶霜'],
@@ -30,7 +31,7 @@ function Slider({ label, value, min, max, step, onChange, digits = 2 }) {
   );
 }
 
-export default function Settings({ settings, update, onGo, onSave, saving, saveMsg }) {
+export default function Settings({ settings, update, onGo, onSave, saving, saveMsg, avatars, onAvatarsChange }) {
   const s = settings;
   return (
     <>
@@ -47,6 +48,11 @@ export default function Settings({ settings, update, onGo, onSave, saving, saveM
       <div className="group">
         <div className="gl">对话参数</div>
         <ChatSettings />
+      </div>
+
+      <div className="group">
+        <div className="gl">头像</div>
+        <AvatarPicker avatars={avatars} onChange={onAvatarsChange} />
       </div>
 
       <div className="group">

@@ -10,7 +10,7 @@ import Album from './screens/Album.jsx';
 import Mail from './screens/Mail.jsx';
 import Games from './screens/Games.jsx';
 import Lock from './components/Lock.jsx';
-import { authApi, uiSettings } from './api.js';
+import { authApi, uiSettings, avatarsApi } from './api.js';
 
 const DEFAULTS = {
   theme: 'cream',
@@ -48,6 +48,7 @@ export default function App() {
   /* 口令锁：checking -> ok / locked */
   const [authState, setAuthState] = useState('checking');
   const [saving, setSaving] = useState(false);
+  const [avatars, setAvatars] = useState({});
   const [saveMsg, setSaveMsg] = useState('');
 
   useEffect(() => {
@@ -81,6 +82,16 @@ export default function App() {
         setSettings((s) => ((v.savedAt || 0) > (s.savedAt || 0) ? { ...s, ...v } : s));
       })
       .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [authState]);
+
+  /* 头像 */
+  useEffect(() => {
+    if (authState !== 'ok') return;
+    let alive = true;
+    avatarsApi.get().then((v) => alive && setAvatars(v || {})).catch(() => {});
     return () => {
       alive = false;
     };
@@ -155,13 +166,14 @@ export default function App() {
           glass={chatGlass}
           me={me}
           showAvatars={settings.showAvatars}
+          avatars={avatars}
           patMe={settings.patMe}
           patTa={settings.patTa}
           onGo={setScreen}
         />
       ),
       diary: <Diary me={me} onGo={setScreen} />,
-      aerie: <Aerie me={me} startDate={settings.startDate} onGo={setScreen} />,
+      aerie: <Aerie me={me} startDate={settings.startDate} avatarUrl={avatars.ta} onGo={setScreen} />,
       rituals: <Rituals startDate={settings.startDate} onGo={setScreen} />,
       album: <Album onGo={setScreen} />,
       mail: <Mail me={me} onGo={setScreen} />,
@@ -173,6 +185,8 @@ export default function App() {
           onSave={saveNow}
           saving={saving}
           saveMsg={saveMsg}
+            avatars={avatars}
+            onAvatarsChange={setAvatars}
           onGo={setScreen}
         />
       )

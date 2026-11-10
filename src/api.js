@@ -176,6 +176,13 @@ export const conversations = {
   remove: (id) => request('/api/conversations/' + id, { method: 'DELETE' })
 };
 
+export const avatarsApi = {
+  get: () => request('/api/avatars').then((r) => r.avatars || {}),
+  upload: (who, dataUrl) =>
+    request('/api/avatars', { method: 'POST', body: JSON.stringify({ who, dataUrl }) }),
+  remove: (who) => request('/api/avatars/' + who, { method: 'DELETE' })
+};
+
 export const stickersApi = {
   list: () => request('/api/stickers').then((r) => r.stickers),
   add: (name, dataUrl) =>

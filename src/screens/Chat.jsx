@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import { api, conversations as convApi, stickersApi } from '../api.js';
+import AvatarImg from '../components/AvatarImg.jsx';
 
 const NAME = 'Elliott';
 
@@ -9,24 +10,8 @@ function fmtTime(iso) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
-function Avatar({ kind }) {
-  const mine = kind === 'me';
-  return (
-    <div className={'avatar s26 ' + (mine ? 'a-bunny' : 'a-elliott')}>
-      {mine ? (
-        <svg viewBox="0 0 24 24" fill="none" stroke="#7A6448" strokeWidth="1.1">
-          <path d="M12 19.2c-3.6-2.6-6.2-5-6.2-7.8A3.6 3.6 0 0 1 12 8.9a3.6 3.6 0 0 1 6.2 2.5c0 2.8-2.6 5.2-6.2 7.8Z" />
-        </svg>
-      ) : (
-        <svg viewBox="0 0 24 24" fill="none" stroke="#4C5C66" strokeWidth="1.1">
-          <path d="M16.5 15.4A7.2 7.2 0 0 1 8.6 5.2a7.4 7.4 0 1 0 9.2 9.3c-.5.1-1 .2-1.3.9Z" />
-        </svg>
-      )}
-    </div>
-  );
-}
 /* 单条消息（含可折叠的思考链） */
-function Message({ m, showAvatars }) {
+function Message({ m, showAvatars, avatars = {} }) {
   const [open, setOpen] = useState(false);
   const mine = m.role === 'user';
   const reasoning = m.meta?.reasoning;
@@ -34,7 +19,7 @@ function Message({ m, showAvatars }) {
   return (
     <>
       <div className={'msg ' + (mine ? 'me' : 'them')}>
-        {showAvatars && !mine && <Avatar kind="them" />}
+        {showAvatars && !mine && <AvatarImg who="ta" url={avatars.ta} size="s26" />}
         <div className="bubble-stack">
           {m.content && m.content !== '[表情]' && <div className="bubble">{m.content}</div>}
           {m.meta?.sticker && <img className="sticker-msg" src={m.meta.sticker} alt="表情" />}
@@ -43,7 +28,7 @@ function Message({ m, showAvatars }) {
             {mine ? ' · 你' : m.model ? ` · ${m.model}${m.tokens ? ` · ${m.tokens} tokens` : ''}` : ''}
           </div>
         </div>
-        {showAvatars && mine && <Avatar kind="me" />}
+        {showAvatars && mine && <AvatarImg who="me" url={avatars.me} size="s26" />}
       </div>
 
       {reasoning && (
@@ -63,7 +48,7 @@ function Message({ m, showAvatars }) {
   );
 }
 
-export default function Chat({ onGo, showAvatars }) {
+export default function Chat({ onGo, showAvatars, avatars = {} }) {
   const [messages, setMessages] = useState([]);
   const [convId, setConvId] = useState(null);
   const [convList, setConvList] = useState([]);
@@ -200,11 +185,7 @@ export default function Chat({ onGo, showAvatars }) {
           </svg>
         </button>
         <div className="chat-who" onClick={() => setSheet('profile')}>
-          <div className="avatar a-elliott s24">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#4C5C66" strokeWidth="1.1">
-              <path d="M16.5 15.4A7.2 7.2 0 0 1 8.6 5.2a7.4 7.4 0 1 0 9.2 9.3c-.5.1-1 .2-1.3.9Z" />
-            </svg>
-          </div>
+          <AvatarImg who="ta" url={avatars.ta} size="s24" />
           <div className="chat-center">
             <div className="chat-name">{NAME}</div>
             <div className="chat-sub">
@@ -237,7 +218,7 @@ export default function Chat({ onGo, showAvatars }) {
         )}
 
         {messages.map((m) => (
-          <Message key={m.id} m={m} showAvatars={showAvatars} />
+          <Message key={m.id} m={m} showAvatars={showAvatars} avatars={avatars} />
         ))}
 
         {sending && (
@@ -343,11 +324,7 @@ export default function Chat({ onGo, showAvatars }) {
           <div className="sheet" onClick={(e) => e.stopPropagation()}>
             <div className="grab" />
             <div className="av-row">
-              <div className="avatar a-elliott s64">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#4C5C66" strokeWidth="1.1">
-                  <path d="M16.5 15.4A7.2 7.2 0 0 1 8.6 5.2a7.4 7.4 0 1 0 9.2 9.3c-.5.1-1 .2-1.3.9Z" />
-                </svg>
-              </div>
+              <AvatarImg who="ta" url={avatars.ta} size="s64" />
               <div>
                 <div className="nm">{NAME}</div>
                 <div className="sb">在窗边看雨 · 心情 安静</div>
