@@ -1,6 +1,7 @@
 ﻿import React from 'react';
 import ModelPicker from '../components/ModelPicker.jsx';
 import ChatSettings from '../components/ChatSettings.jsx';
+import StickerManager from '../components/StickerManager.jsx';
 
 const THEMES = [
   ['cream', '#B08A6A', '素色奶霜'],
@@ -46,6 +47,11 @@ export default function Settings({ settings, update, onGo, onSave, saving, saveM
       <div className="group">
         <div className="gl">对话参数</div>
         <ChatSettings />
+      </div>
+
+      <div className="group">
+        <div className="gl">表情包</div>
+        <StickerManager />
       </div>
 
       <div className="group">

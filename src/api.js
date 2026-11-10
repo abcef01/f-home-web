@@ -85,10 +85,10 @@ export const api = {
   messages: (conversationId) =>
     request('/api/conversations/' + conversationId + '/messages').then((r) => r.messages),
 
-  chat: ({ conversationId, message, channel, model }) =>
+  chat: ({ conversationId, message, channel, model, sticker }) =>
     request('/api/chat', {
       method: 'POST',
-      body: JSON.stringify({ conversationId, message, channel, model })
+      body: JSON.stringify({ conversationId, message, channel, model, sticker })
     })
 };
 
@@ -174,6 +174,13 @@ export const conversations = {
   rename: (id, title) =>
     request('/api/conversations/' + id, { method: 'PATCH', body: JSON.stringify({ title }) }),
   remove: (id) => request('/api/conversations/' + id, { method: 'DELETE' })
+};
+
+export const stickersApi = {
+  list: () => request('/api/stickers').then((r) => r.stickers),
+  add: (name, dataUrl) =>
+    request('/api/stickers', { method: 'POST', body: JSON.stringify({ name, dataUrl }) }),
+  remove: (id) => request('/api/stickers/' + id, { method: 'DELETE' })
 };
 
 export const uiSettings = {

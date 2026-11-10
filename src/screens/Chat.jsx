@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
-import { api, conversations as convApi } from '../api.js';
+import { api, conversations as convApi, stickersApi } from '../api.js';
 
 const NAME = 'Elliott';
 
@@ -9,6 +9,22 @@ function fmtTime(iso) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
+function Avatar({ kind }) {
+  const mine = kind === 'me';
+  return (
+    <div className={'avatar s26 ' + (mine ? 'a-bunny' : 'a-elliott')}>
+      {mine ? (
+        <svg viewBox="0 0 24 24" fill="none" stroke="#7A6448" strokeWidth="1.1">
+          <path d="M12 19.2c-3.6-2.6-6.2-5-6.2-7.8A3.6 3.6 0 0 1 12 8.9a3.6 3.6 0 0 1 6.2 2.5c0 2.8-2.6 5.2-6.2 7.8Z" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" fill="none" stroke="#4C5C66" strokeWidth="1.1">
+          <path d="M16.5 15.4A7.2 7.2 0 0 1 8.6 5.2a7.4 7.4 0 1 0 9.2 9.3c-.5.1-1 .2-1.3.9Z" />
+        </svg>
+      )}
+    </div>
+  );
+}
 /* 单条消息（含可折叠的思考链） */
 function Message({ m, showAvatars }) {
   const [open, setOpen] = useState(false);
@@ -18,26 +34,19 @@ function Message({ m, showAvatars }) {
   return (
     <>
       <div className={'msg ' + (mine ? 'me' : 'them')}>
-        {showAvatars && (
-          <div className={'avatar s26 ' + (mine ? 'a-bunny' : 'a-elliott')}>
-            {mine ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="#7A6448" strokeWidth="1.1">
-                <path d="M12 19.2c-3.6-2.6-6.2-5-6.2-7.8A3.6 3.6 0 0 1 12 8.9a3.6 3.6 0 0 1 6.2 2.5c0 2.8-2.6 5.2-6.2 7.8Z" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="#4C5C66" strokeWidth="1.1">
-                <path d="M16.5 15.4A7.2 7.2 0 0 1 8.6 5.2a7.4 7.4 0 1 0 9.2 9.3c-.5.1-1 .2-1.3.9Z" />
-              </svg>
-            )}
-          </div>
-        )}
+        {showAvatars && !mine && <Avatar kind="them" />}
         <div className="bubble-stack">
-          <div className="bubble">{m.content}</div>
+          {m.meta?.sticker ? (
+            <img className="sticker-msg" src={m.meta.sticker} alt="表情" />
+          ) : (
+            <div className="bubble">{m.content}</div>
+          )}
           <div className="meta">
             {fmtTime(m.created_at)}
             {mine ? ' · 你' : m.model ? ` · ${m.model}${m.tokens ? ` · ${m.tokens} tokens` : ''}` : ''}
           </div>
         </div>
+        {showAvatars && mine && <Avatar kind="me" />}
       </div>
 
       {reasoning && (
@@ -66,6 +75,8 @@ export default function Chat({ onGo, showAvatars }) {
   const [error, setError] = useState('');
   const [sheet, setSheet] = useState(null); // 'profile' | 'conversations' | null
   const [loaded, setLoaded] = useState(false);
+  const [stickers, setStickers] = useState([]);
+  const [stickerSheet, setStickerSheet] = useState(false);
   const listRef = useRef(null);
 
   /* 打开时加载历史 */
@@ -94,6 +105,10 @@ export default function Chat({ onGo, showAvatars }) {
   }, []);
 
   useEffect(() => {
+    stickersApi.list().then(setStickers).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, sending]);
@@ -110,6 +125,26 @@ export default function Chat({ onGo, showAvatars }) {
 
     try {
       const res = await api.chat({ conversationId: convId, message: text });
+      setConvId(res.conversationId);
+      setMessages((m) => [...m.filter((x) => x.id !== optimistic.id), res.userMessage, res.reply]);
+      convApi.list().then(setConvList).catch(() => {});
+    } catch (e) {
+      setMessages((m) => m.filter((x) => x.id !== optimistic.id));
+      setError(e.message);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function sendSticker(url) {
+    if (sending) return;
+    setStickerSheet(false);
+    setError('');
+    setSending(true);
+    const optimistic = { id: 'tmp-s-' + Date.now(), role: 'user', content: '[表情]', meta: { sticker: url }, created_at: new Date().toISOString() };
+    setMessages((m) => [...m, optimistic]);
+    try {
+      const res = await api.chat({ conversationId: convId, message: '[表情]', sticker: url });
       setConvId(res.conversationId);
       setMessages((m) => [...m.filter((x) => x.id !== optimistic.id), res.userMessage, res.reply]);
       convApi.list().then(setConvList).catch(() => {});
@@ -230,6 +265,14 @@ export default function Chat({ onGo, showAvatars }) {
       </div>
 
       <div className="composer">
+        <button className="sticker-btn" onClick={() => setStickerSheet(true)} title="表情包">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+            <circle cx="12" cy="12" r="8" />
+            <circle cx="9.2" cy="10" r="0.9" fill="currentColor" stroke="none" />
+            <circle cx="14.8" cy="10" r="0.9" fill="currentColor" stroke="none" />
+            <path d="M8.6 14.2a4.2 4.2 0 0 0 6.8 0" />
+          </svg>
+        </button>
         <div className="field">
           <svg viewBox="0 0 24 24">
             <path d="M12 5.5v13M5.5 12h13" />
@@ -252,6 +295,26 @@ export default function Chat({ onGo, showAvatars }) {
           </svg>
         </button>
       </div>
+
+      {stickerSheet && (
+        <div className="sheet-mask on" onClick={() => setStickerSheet(false)}>
+          <div className="sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="grab" />
+            <div className="sheet-title">表情包</div>
+            {stickers.length === 0 ? (
+              <div className="hint-line">还没有表情。去 设置 → 表情包 里导入几张吧。</div>
+            ) : (
+              <div className="sticker-picker">
+                {stickers.map((s) => (
+                  <button key={s.id} className="sticker-pick" onClick={() => sendSticker(s.url)}>
+                    <img src={s.url} alt={s.name} />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {sheet === 'conversations' && (
         <div className="sheet-mask on" onClick={() => setSheet(null)}>

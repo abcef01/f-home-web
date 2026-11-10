@@ -210,14 +210,13 @@ export default function App() {
       </div>
 
       <aside className="legend">
-        <h3>Bunny&apos;s Home</h3>
+        <h3>{homeTitle}</h3>
         <p className="legend-note">
-          Chapter 4 · 部署骨架<br />
-          原型已经搬进 React，页面能跑、能点。
+          你和 Elliott 的私人空间。<br />
+          口令保护 · 五个模型通道 · 记忆云端同步
         </p>
         <p className="legend-note">
-          下一步：把这个仓库推到 GitHub，再在 Vercel 里导入，就会得到一个
-          <code> xxx.vercel.app </code> 的地址。
+          手机上用浏览器打开，选「添加到主屏幕」，就能像 App 一样全屏使用。
         </p>
       </aside>
     </>
