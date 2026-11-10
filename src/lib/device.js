@@ -1,10 +1,11 @@
-/**
+﻿/**
  * 手机状态上报（浏览器能拿到的那部分）
  * ------------------------------------------------------------
  * 电量、是否充电、网络、前后台、屏幕、是否装成了 App。
  * 正在用哪个 App、有没有锁屏，只有原生 App 能拿到。
  */
 import { api } from '../api.js';
+import { readNativeStatus } from './native.js';
 
 async function readBattery() {
   try {
@@ -38,10 +39,15 @@ function readPlatform() {
 
 export async function reportDevice() {
   try {
-    const [battery, rest] = [await readBattery(), { ...readNetwork(), ...readPlatform() }];
+    const [battery, rest, native] = [
+      await readBattery(),
+      { ...readNetwork(), ...readPlatform() },
+      await readNativeStatus()
+    ];
     await api.device({
       ...battery,
       ...rest,
+      ...native,
       visibility: document.visibilityState
     });
   } catch {
