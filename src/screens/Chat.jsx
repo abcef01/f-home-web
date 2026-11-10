@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { api, conversations as convApi } from '../api.js';
 
 const NAME = 'Elliott';
@@ -18,11 +18,17 @@ function Message({ m, showAvatars }) {
   return (
     <>
       <div className={'msg ' + (mine ? 'me' : 'them')}>
-        {showAvatars && !mine && (
-          <div className="avatar a-elliott s26">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#4C5C66" strokeWidth="1.1">
-              <path d="M16.5 15.4A7.2 7.2 0 0 1 8.6 5.2a7.4 7.4 0 1 0 9.2 9.3c-.5.1-1 .2-1.3.9Z" />
-            </svg>
+        {showAvatars && (
+          <div className={'avatar s26 ' + (mine ? 'a-bunny' : 'a-elliott')}>
+            {mine ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="#7A6448" strokeWidth="1.1">
+                <path d="M12 19.2c-3.6-2.6-6.2-5-6.2-7.8A3.6 3.6 0 0 1 12 8.9a3.6 3.6 0 0 1 6.2 2.5c0 2.8-2.6 5.2-6.2 7.8Z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="#4C5C66" strokeWidth="1.1">
+                <path d="M16.5 15.4A7.2 7.2 0 0 1 8.6 5.2a7.4 7.4 0 1 0 9.2 9.3c-.5.1-1 .2-1.3.9Z" />
+              </svg>
+            )}
           </div>
         )}
         <div className="bubble-stack">

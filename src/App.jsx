@@ -26,6 +26,8 @@ const DEFAULTS = {
   blur: 14,
   me: 'Bunny',
   homeTitle: '',
+  startDate: '2025-02-01',
+  savedAt: 0,
   patMe: '顺毛',
   patTa: '摸摸头',
   showAvatars: false,
@@ -64,7 +66,8 @@ export default function App() {
     return KNOWN.includes(h) && h !== 'object' ? h : 'opening';
   });
 
-  const update = (patch) => setSettings((s) => ({ ...s, ...patch }));
+  /* 每次改动记一个时间戳：云端与本地的合并以「谁更新」为准 */
+  const update = (patch) => setSettings((s) => ({ ...s, ...patch, savedAt: Date.now() }));
 
   /* 进站后拉一次云端设置（换设备/清缓存也能恢复） */
   useEffect(() => {
@@ -73,7 +76,9 @@ export default function App() {
     uiSettings
       .get()
       .then((v) => {
-        if (alive && v && typeof v === 'object') setSettings((s) => ({ ...s, ...v }));
+        if (!alive || !v || typeof v !== 'object') return;
+        /* 只有云端比本地新才覆盖，避免旧配置把刚改的冲掉 */
+        setSettings((s) => ((v.savedAt || 0) > (s.savedAt || 0) ? { ...s, ...v } : s));
       })
       .catch(() => {});
     return () => {
@@ -141,6 +146,7 @@ export default function App() {
         <Home
           me={me}
           homeTitle={homeTitle}
+            startDate={settings.startDate}
           onGo={setScreen}
         />
       ),

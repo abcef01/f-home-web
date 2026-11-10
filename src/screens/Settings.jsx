@@ -141,6 +141,16 @@ export default function Settings({ settings, update, onGo, onSave, saving, saveM
           <span className="arrow">›</span>
         </div>
         <div className="list-item">
+          <span className="t">开始日期</span>
+          <input
+            className="field-input"
+            type="date"
+            value={s.startDate || '2025-02-01'}
+            onChange={(e) => update({ startDate: e.target.value })}
+          />
+          <span className="arrow">›</span>
+        </div>
+        <div className="list-item">
           <span className="t">首页标题</span>
           <input
             className="name-input"
