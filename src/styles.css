@@ -2587,3 +2587,5 @@ body.show-avatars .msg.me { flex-direction: row; }
 }
 
 .surf-from a { color: var(--accent-deep); text-decoration: none; border-bottom: 1px solid currentColor; }
+
+.notify-box { display: flex; flex-direction: column; gap: 8px; }

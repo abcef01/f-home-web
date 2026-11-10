@@ -1,4 +1,4 @@
-/* Bunny's Home — Service Worker
+﻿/* Bunny's Home — Service Worker
  * ------------------------------------------------------------
  * 策略：
  *   · 页面导航：先走网络，失败回退到缓存的 index.html（断网也能打开）
@@ -6,7 +6,7 @@
  *   · /api/*：完全不碰，永远走网络（聊天必须实时）
  */
 
-const VERSION = 'bunny-v1';
+const VERSION = 'bunny-v2';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
@@ -64,6 +64,39 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => cached);
       return cached || network;
+    })
+  );
+});
+
+/* ============================================================
+   后台通知：即使 App 没开着，也能收到「它说话了」
+   ============================================================ */
+self.addEventListener('push', (event) => {
+  event.waitUntil(
+    self.registration.showNotification('Elliott', {
+      body: '给你留了一句话',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      tag: 'bunny-message',
+      renotify: true,
+      data: { url: '/#chat' }
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || '/#chat';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if (c.url.indexOf(self.location.origin) === 0) {
+          c.focus();
+          if (c.navigate) c.navigate(self.location.origin + target);
+          return;
+        }
+      }
+      return self.clients.openWindow(self.location.origin + target);
     })
   );
 });

@@ -3,6 +3,8 @@ import ModelPicker from '../components/ModelPicker.jsx';
 import ChatSettings from '../components/ChatSettings.jsx';
 import StickerManager from '../components/StickerManager.jsx';
 import AvatarPicker from '../components/AvatarPicker.jsx';
+import NotifyToggle from '../components/NotifyToggle.jsx';
+import { api, auth } from '../api.js';
 
 const THEMES = [
   ['cream', '#B08A6A', '素色奶霜'],
@@ -76,6 +78,11 @@ export default function Settings({ settings, update, onGo, onSave, saving, saveM
           关掉这个开关，他就不能看；聊天里他也能主动请求，你可以当场拒绝。
           共享时底部有停止键，浏览器顶部也有。
         </div>
+      </div>
+
+      <div className="group">
+        <div className="gl">通知</div>
+        <NotifyToggle apiBase={api.base} token={auth.token} />
       </div>
 
       <div className="group">
