@@ -10,6 +10,7 @@ import Album from './screens/Album.jsx';
 import Mail from './screens/Mail.jsx';
 import Games from './screens/Games.jsx';
 import Lock from './components/Lock.jsx';
+import InstallHint from './components/InstallHint.jsx';
 import { authApi, uiSettings, avatarsApi } from './api.js';
 
 const DEFAULTS = {
@@ -31,6 +32,8 @@ const DEFAULTS = {
   patMe: '顺毛',
   patTa: '摸摸头',
   showAvatars: false,
+  watchAllowed: false,
+  watchEvery: 45,
   lang: 'zh'
 };
 
@@ -167,6 +170,8 @@ export default function App() {
           me={me}
           showAvatars={settings.showAvatars}
           avatars={avatars}
+          watchAllowed={settings.watchAllowed}
+          watchEvery={settings.watchEvery}
           patMe={settings.patMe}
           patTa={settings.patTa}
           onGo={setScreen}
@@ -186,6 +191,8 @@ export default function App() {
           saving={saving}
           saveMsg={saveMsg}
             avatars={avatars}
+          watchAllowed={settings.watchAllowed}
+          watchEvery={settings.watchEvery}
             onAvatarsChange={setAvatars}
           onGo={setScreen}
         />

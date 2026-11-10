@@ -11,7 +11,7 @@ function fmtTime(iso) {
 }
 
 /* 单条消息（含可折叠的思考链） */
-function Message({ m, showAvatars, avatars = {} }) {
+function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAllowWatch, onDenyWatch }) {
   const [open, setOpen] = useState(false);
   const mine = m.role === 'user';
   const reasoning = m.meta?.reasoning;
@@ -23,6 +23,15 @@ function Message({ m, showAvatars, avatars = {} }) {
         <div className="bubble-stack">
           {m.content && m.content !== '[表情]' && <div className="bubble">{m.content}</div>}
           {m.meta?.sticker && <img className="sticker-msg" src={m.meta.sticker} alt="表情" />}
+          {m.meta?.watchRequest && !watching && !denied?.has(m.id) && (
+            <div className="watch-ask">
+              <span>他想看看你在做什么</span>
+              <div className="watch-ask-actions">
+                <button className="watch-yes" onClick={() => onAllowWatch?.()}>让他看</button>
+                <button className="watch-no" onClick={() => onDenyWatch?.(m.id)}>先不要</button>
+              </div>
+            </div>
+          )}
           <div className="meta">
             {fmtTime(m.created_at)}
             {mine ? ' · 你' : m.model ? ` · ${m.model}${m.tokens ? ` · ${m.tokens} tokens` : ''}` : ''}
@@ -48,7 +57,7 @@ function Message({ m, showAvatars, avatars = {} }) {
   );
 }
 
-export default function Chat({ onGo, showAvatars, avatars = {} }) {
+export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = false, watchEvery = 45 }) {
   const [messages, setMessages] = useState([]);
   const [convId, setConvId] = useState(null);
   const [convList, setConvList] = useState([]);
@@ -61,6 +70,7 @@ export default function Chat({ onGo, showAvatars, avatars = {} }) {
   const [stickerSheet, setStickerSheet] = useState(false);
   const [watching, setWatching] = useState(false);
   const [watchErr, setWatchErr] = useState('');
+  const [denied, setDenied] = useState(new Set());
   const shareRef = useRef(null);
   const videoRef = useRef(null);
   const timerRef = useRef(null);
@@ -144,7 +154,7 @@ export default function Chat({ onGo, showAvatars, avatars = {} }) {
   }
 
   /* ---------- 看屏幕 ---------- */
-  const WATCH_EVERY = 45000;
+  const WATCH_EVERY = Math.max(15, Number(watchEvery) || 45) * 1000;
 
   function captureFrame() {
     const v = videoRef.current;
@@ -175,6 +185,10 @@ export default function Chat({ onGo, showAvatars, avatars = {} }) {
 
   async function startWatch() {
     setWatchErr('');
+    if (!watchAllowed) {
+      setWatchErr('先在设置 →「看屏幕」里允许，才能共享');
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 2 }, audio: false });
       shareRef.current = stream;
@@ -261,7 +275,11 @@ export default function Chat({ onGo, showAvatars, avatars = {} }) {
         <div className="chat-actions">
           <button
             className={'icon-btn' + (watching ? ' watching' : '')}
-            onClick={() => (watching ? stopWatch() : startWatch())}
+            onClick={() => {
+              if (watching) return stopWatch();
+              if (!watchAllowed) return onGo('settings');
+              return startWatch();
+            }}
             title={watching ? '停止共享屏幕' : '让他看我的屏幕'}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
@@ -292,7 +310,16 @@ export default function Chat({ onGo, showAvatars, avatars = {} }) {
         )}
 
         {messages.map((m) => (
-          <Message key={m.id} m={m} showAvatars={showAvatars} avatars={avatars} />
+          <Message
+            key={m.id}
+            m={m}
+            showAvatars={showAvatars}
+            avatars={avatars}
+            watching={watching}
+            denied={denied}
+            onAllowWatch={() => startWatch()}
+            onDenyWatch={(id) => setDenied((d) => new Set(d).add(id))}
+          />
         ))}
 
         {sending && (
@@ -319,7 +346,7 @@ export default function Chat({ onGo, showAvatars, avatars = {} }) {
       {watching && (
         <div className="watch-bar">
           <span className="watch-dot" />
-          <span>正看着你的屏幕 · 每 45 秒看一眼</span>
+          <span>正看着你的屏幕 · 每 {Math.round(WATCH_EVERY / 1000)} 秒看一眼</span>
           <button onClick={stopWatch}>停止</button>
         </div>
       )}

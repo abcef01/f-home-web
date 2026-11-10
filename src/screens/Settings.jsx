@@ -51,6 +51,34 @@ export default function Settings({ settings, update, onGo, onSave, saving, saveM
       </div>
 
       <div className="group">
+        <div className="gl">看屏幕</div>
+        <div className="list-item">
+          <span className="t">允许他看我的屏幕</span>
+          <button
+            className={'toggle' + (s.watchAllowed ? ' on' : '')}
+            onClick={() => update({ watchAllowed: !s.watchAllowed })}
+            aria-label="允许看屏幕"
+          />
+        </div>
+        <div className="slider-row" style={{ marginTop: 6 }}>
+          <span className="t">看一次间隔</span>
+          <input
+            type="range"
+            min="15"
+            max="300"
+            step="15"
+            value={s.watchEvery || 45}
+            onChange={(e) => update({ watchEvery: Number(e.target.value) })}
+          />
+          <span className="val">{s.watchEvery || 45}s</span>
+        </div>
+        <div className="hint-line">
+          关掉这个开关，他就不能看；聊天里他也能主动请求，你可以当场拒绝。
+          共享时底部有停止键，浏览器顶部也有。
+        </div>
+      </div>
+
+      <div className="group">
         <div className="gl">头像</div>
         <AvatarPicker avatars={avatars} onChange={onAvatarsChange} />
       </div>

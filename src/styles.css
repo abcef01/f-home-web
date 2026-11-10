@@ -2512,3 +2512,34 @@ body.show-avatars .msg.me { flex-direction: row; }
   margin: 0 16px 6px; font-size: 10.5px; color: #b4553f;
   font-family: var(--font-ui); letter-spacing: 0.04em;
 }
+
+/* 请求卡 */
+.watch-ask {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  background: var(--paper);
+  font-size: 11.5px;
+  color: var(--ink-2);
+  letter-spacing: 0.03em;
+  display: flex; flex-direction: column; gap: 8px;
+  max-width: 240px;
+}
+.watch-ask-actions { display: flex; gap: 8px; }
+.watch-yes, .watch-no {
+  border: 0; border-radius: 2px; cursor: pointer;
+  font-family: var(--font-ui); font-size: 10.5px; letter-spacing: 0.06em;
+  padding: 7px 14px;
+}
+.watch-yes { background: var(--ink); color: var(--paper); }
+.watch-no { background: transparent; color: var(--muted); }
+
+/* 安装提示 */
+.install-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.install-btn {
+  padding: 9px 18px; border: 1px solid var(--ink); border-radius: 2px;
+  background: transparent; color: var(--ink); cursor: pointer;
+  font-family: var(--font-ui); font-size: 10.5px; letter-spacing: 0.08em;
+}
+.install-btn:hover { background: var(--ink); color: var(--paper); }
