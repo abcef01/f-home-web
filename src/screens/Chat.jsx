@@ -36,11 +36,8 @@ function Message({ m, showAvatars }) {
       <div className={'msg ' + (mine ? 'me' : 'them')}>
         {showAvatars && !mine && <Avatar kind="them" />}
         <div className="bubble-stack">
-          {m.meta?.sticker ? (
-            <img className="sticker-msg" src={m.meta.sticker} alt="表情" />
-          ) : (
-            <div className="bubble">{m.content}</div>
-          )}
+          {m.content && m.content !== '[表情]' && <div className="bubble">{m.content}</div>}
+          {m.meta?.sticker && <img className="sticker-msg" src={m.meta.sticker} alt="表情" />}
           <div className="meta">
             {fmtTime(m.created_at)}
             {mine ? ' · 你' : m.model ? ` · ${m.model}${m.tokens ? ` · ${m.tokens} tokens` : ''}` : ''}
