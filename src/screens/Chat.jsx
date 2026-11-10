@@ -34,6 +34,7 @@ function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAll
         <div className="bubble-stack">
           {m.content && m.content !== '[表情]' && <div className="bubble">{m.content}</div>}
           {m.meta?.sticker && <img className="sticker-msg" src={m.meta.sticker} alt="表情" />}
+          {m.meta?.image && <img className="chat-image" src={m.meta.image} alt="图片" />}
           {m.meta?.surf && (
             <div className="surf-card">
               <div className="surf-quote">{m.meta.surf.title}</div>
@@ -97,6 +98,7 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
   const [watching, setWatching] = useState(false);
   const [watchErr, setWatchErr] = useState('');
   const [denied, setDenied] = useState(new Set());
+  const photoRef = useRef(null);
   const [mood, setMood] = useState(null);
   const shareRef = useRef(null);
   const videoRef = useRef(null);
@@ -259,6 +261,40 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
     }
   }
 
+  async function sendImage(file) {
+    if (!file || sending) return;
+    setError('');
+    setSending(true);
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const max = 1024;
+            const scale = Math.min(1, max / Math.max(img.width, img.height));
+            const cv = document.createElement('canvas');
+            cv.width = Math.round(img.width * scale);
+            cv.height = Math.round(img.height * scale);
+            cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+            resolve(cv.toDataURL('image/jpeg', 0.82));
+          };
+          img.onerror = () => reject(new Error('这张图读不出来'));
+          img.src = reader.result;
+        };
+        reader.onerror = () => reject(new Error('读取失败'));
+        reader.readAsDataURL(file);
+      });
+
+      const res = await api.chat({ conversationId: convId, message: '（发了一张图片）', image: dataUrl });
+      setConvId(res.conversationId);
+      setMessages((m) => [...m, res.userMessage, res.reply]);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSending(false);
+    }
+  }
   function stopWatch() {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = null;
@@ -371,6 +407,15 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
       <video ref={videoRef} className="watch-video" muted playsInline />
 
       <div className="composer">
+        <button className="sticker-btn" onClick={() => photoRef.current?.click()} title="发图片">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+            <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
+            <circle cx="9" cy="11" r="1.6" />
+            <path d="M4.5 17l4.5-4 3.5 3 3-2.5 4 3.5" />
+          </svg>
+        </button>
+        <input ref={photoRef} type="file" accept="image/*" style={{ display: 'none' }}
+          onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) sendImage(f); }} />
         <button className="sticker-btn" onClick={() => setStickerSheet(true)} title="表情包">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
             <circle cx="12" cy="12" r="8" />

@@ -87,10 +87,10 @@ export const api = {
   messages: (conversationId) =>
     request('/api/conversations/' + conversationId + '/messages').then((r) => r.messages),
 
-  chat: ({ conversationId, message, channel, model, sticker }) =>
+  chat: ({ conversationId, message, channel, model, sticker, image }) =>
     request('/api/chat', {
       method: 'POST',
-      body: JSON.stringify({ conversationId, message, channel, model, sticker })
+      body: JSON.stringify({ conversationId, message, channel, model, sticker, image })
     })
 };
 
