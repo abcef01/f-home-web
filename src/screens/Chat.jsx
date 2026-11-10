@@ -97,6 +97,8 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
   const [stickerSheet, setStickerSheet] = useState(false);
   const [watching, setWatching] = useState(false);
   const [watchErr, setWatchErr] = useState('');
+  const [healthScanning, setHealthScanning] = useState(false);
+  const [healthNote, setHealthNote] = useState('');
   const [denied, setDenied] = useState(new Set());
   const photoRef = useRef(null);
   const replyTimer = useRef(null);
@@ -325,6 +327,55 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
       setSending(false);
     }
   }
+  /* 读手环：共享屏幕 → 你切到华为运动健康 → 它自己截几张找数据 */
+  async function startHealthScan() {
+    setWatchErr('');
+    setHealthNote('');
+    if (watching) stopWatch();
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 2 }, audio: false });
+    } catch (e) {
+      setWatchErr(e.name === 'NotAllowedError' ? '你取消了共享' : e.message);
+      return;
+    }
+
+    const v = videoRef.current;
+    v.srcObject = stream;
+    await v.play().catch(() => {});
+    setHealthScanning(true);
+    shareRef.current = stream;
+    stream.getVideoTracks()[0].addEventListener('ended', () => setHealthScanning(false));
+
+    let done = false;
+    for (let i = 0; i < 5 && !done; i++) {
+      await new Promise((r) => setTimeout(r, 4000));
+      const image = captureFrame();
+      if (!image) continue;
+      try {
+        const r = await watchApi.frame(image, convId, 'health');
+        if (r.health) {
+          done = true;
+          const h = r.health;
+          const bits = [];
+          if (h.steps) bits.push(h.steps + ' 步');
+          if (h.sleepHours) bits.push('睡 ' + h.sleepHours + ' 小时');
+          if (h.restingHr) bits.push('心率 ' + h.restingHr);
+          setHealthNote('记下了：' + (bits.join(' · ') || '读到了数据'));
+        }
+      } catch {
+        /* 这一张没读到，继续下一张 */
+      }
+    }
+
+    setHealthScanning(false);
+    if (shareRef.current) {
+      shareRef.current.getTracks().forEach((t) => t.stop());
+      shareRef.current = null;
+    }
+    if (!done) setHealthNote('没读到数据。下次先滚到睡眠卡片再点。');
+  }
+
   function stopWatch() {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = null;
@@ -365,6 +416,15 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
           </div>
         </div>
         <div className="chat-actions">
+          <button
+            className={'icon-btn' + (healthScanning ? ' watching' : '')}
+            onClick={startHealthScan}
+            title="读手环（会共享屏幕）"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <path d="M3 12h3l2-5 3 10 2.5-7 2 4H21" />
+            </svg>
+          </button>
           <button
             className={'icon-btn' + (watching ? ' watching' : '')}
             onClick={() => {
@@ -433,6 +493,14 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
           <button onClick={stopWatch}>停止</button>
         </div>
       )}
+      {healthScanning && (
+        <div className="watch-bar">
+          <span className="watch-dot" />
+          <span>切到华为运动健康，滚到睡眠卡片，别退出共享</span>
+          <button onClick={() => setHealthScanning(false)}>停</button>
+        </div>
+      )}
+      {healthNote && <div className="watch-bar"><span>{healthNote}</span></div>}
       {watchErr && <div className="watch-err">{watchErr}</div>}
       <video ref={videoRef} className="watch-video" muted playsInline />
 

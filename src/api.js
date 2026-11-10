@@ -198,8 +198,8 @@ export const heartbeatApi = {
 };
 
 export const watchApi = {
-  frame: (image, conversationId) =>
-    request('/api/watch', { method: 'POST', body: JSON.stringify({ image, conversationId }) })
+  frame: (image, conversationId, mode) =>
+    request('/api/watch', { method: 'POST', body: JSON.stringify({ image, conversationId, mode }) })
 };
 
 export const avatarsApi = {
