@@ -35,6 +35,7 @@ function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAll
           {m.content && m.content !== '[表情]' && <div className="bubble">{m.content}</div>}
           {m.meta?.sticker && <img className="sticker-msg" src={m.meta.sticker} alt="表情" />}
           {m.meta?.image && <img className="chat-image" src={m.meta.image} alt="图片" />}
+          {m.meta?.thought && <ThoughtBlock text={m.meta.thought} />}
           {m.meta?.surf && (
             <div className="surf-card">
               <div className="surf-quote">{m.meta.surf.title}</div>
@@ -668,5 +669,18 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
         </div>
       )}
     </>
+  );
+}
+
+/* 它刚才在心里想什么（默认收起） */
+function ThoughtBlock({ text }) {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <div className="thought">
+      <button className="thought-toggle" onClick={() => setOpen((v) => !v)}>
+        {open ? '收起' : '它在想什么'}
+      </button>
+      {open && <div className="thought-body">{text}</div>}
+    </div>
   );
 }
