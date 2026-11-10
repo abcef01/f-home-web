@@ -2,6 +2,7 @@
 import Opening from './Opening.jsx';
 import Home from './screens/Home.jsx';
 import Chat from './screens/Chat.jsx';
+import Call from './screens/Call.jsx';
 import Diary from './screens/Diary.jsx';
 import Aerie from './screens/Aerie.jsx';
 import Settings from './screens/Settings.jsx';
@@ -66,7 +67,7 @@ export default function App() {
       alive = false;
     };
   }, []);
-  const KNOWN = ['object', 'home', 'chat', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games'];
+  const KNOWN = ['object', 'home', 'chat', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games', 'call'];
   const [screen, setScreen] = useState(() => {
     const h = (window.location.hash || '').replace('#', '');
     return KNOWN.includes(h) && h !== 'object' ? h : 'opening';
@@ -223,9 +224,13 @@ export default function App() {
           onGo={setScreen}
         />
       ),
+      call: (
+        <Call voice={settings.voice || {}} onClose={() => setScreen('chat')} />
+      ),
       chat: (
         <Chat
           voice={settings.voice || {}}
+          onCall={() => setScreen('call')}
           onVoiceChange={(v) => setSettings((s) => ({ ...s, voice: v }))}
           glass={chatGlass}
           me={me}

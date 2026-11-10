@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 它的声音
  * ------------------------------------------------------------
  * 用系统自带的语音合成，不额外调 API、不花钱、离线也能用。
@@ -86,4 +86,69 @@ export function listen({ onResult, onEnd, onError, lang = 'zh-CN' } = {}) {
 
   rec.start();
   return rec;
+}
+
+/* ---------- 通话用：连续听，静音一会儿就认为你说完了 ---------- */
+export function listenStream({ onPartial, onFinal, onEnd, onError, lang = 'zh-CN', silenceMs = 1400 } = {}) {
+  const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Ctor) return null;
+
+  const rec = new Ctor();
+  rec.lang = lang;
+  rec.continuous = true;
+  rec.interimResults = true;
+
+  let buffer = '';
+  let timer = null;
+  let stopped = false;
+
+  const flush = () => {
+    const text = buffer.trim();
+    buffer = '';
+    if (text) onFinal?.(text);
+  };
+
+  rec.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i];
+      if (r.isFinal) buffer += r[0].transcript;
+      else interim += r[0].transcript;
+    }
+    onPartial?.((buffer + interim).trim());
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(flush, silenceMs);
+  };
+
+  rec.onerror = (e) => {
+    if (e.error === 'no-speech' || e.error === 'aborted') return;
+    onError?.(e.error);
+  };
+
+  rec.onend = () => {
+    if (!stopped) {
+      /* Chrome 会在静音后自动停，重启继续听 */
+      try {
+        rec.start();
+        return;
+      } catch {
+        /* ignore */
+      }
+    }
+    onEnd?.();
+  };
+
+  rec.start();
+
+  return {
+    stop() {
+      stopped = true;
+      if (timer) clearTimeout(timer);
+      try {
+        rec.stop();
+      } catch {
+        /* ignore */
+      }
+    }
+  };
 }

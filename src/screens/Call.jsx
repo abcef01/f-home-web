@@ -1,0 +1,222 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { callApi } from '../api.js';
+import { speak, stopSpeak, listenStream, listenSupported } from '../lib/speech.js';
+
+/**
+ * 通话界面
+ * ------------------------------------------------------------
+ * 拨号 → 响铃 → 接通 → 说话 → 挂断 → 摘要
+ * 它不是真的打电话，是把这个过程做出来。
+ */
+export default function Call({ voice = {}, onClose }) {
+  const [phase, setPhase] = useState('dialing'); // dialing | ringing | talking | ending | done
+  const [seconds, setSeconds] = useState(0);
+  const [lines, setLines] = useState([]);
+  const [interim, setInterim] = useState('');
+  const [muted, setMuted] = useState(false);
+  const [summary, setSummary] = useState('');
+  const [err, setErr] = useState('');
+
+  const recRef = useRef(null);
+  const audioCtxRef = useRef(null);
+  const busyRef = useRef(false);
+  const phaseRef = useRef('dialing');
+
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
+
+  /* 响铃：两声回铃音，然后接通 */
+  useEffect(() => {
+    let cancelled = false;
+    const ring = async () => {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        audioCtxRef.current = ctx;
+        const beep = (delay, freq = 425) => {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.frequency.value = freq;
+          o.type = 'sine';
+          g.gain.value = 0;
+          o.connect(g).connect(ctx.destination);
+          o.start(ctx.currentTime + delay);
+          g.gain.setValueAtTime(0, ctx.currentTime + delay);
+          g.gain.linearRampToValueAtTime(0.05, ctx.currentTime + delay + 0.05);
+          g.gain.linearRampToValueAtTime(0, ctx.currentTime + delay + 0.8);
+          o.stop(ctx.currentTime + delay + 0.85);
+        };
+        beep(0);
+        beep(1.1);
+        await new Promise((r) => setTimeout(r, 2200));
+        if (cancelled) return;
+        setPhase('talking');
+      } catch {
+        setPhase('talking');
+      }
+    };
+
+    setPhase('ringing');
+    callApi
+      .start({ reason: '想听听你的声音' })
+      .then(() => {
+        if (!cancelled) ring();
+      })
+      .catch((e) => setErr(e.message));
+
+    return () => {
+      cancelled = true;
+      audioCtxRef.current?.close().catch(() => {});
+    };
+  }, []);
+
+  /* 通话计时 */
+  useEffect(() => {
+    if (phase !== 'talking') return;
+    const t = setInterval(() => setSeconds((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [phase]);
+
+  /* 接通：它先开口，然后开始听 */
+  useEffect(() => {
+    if (phase !== 'talking') return;
+    say('喂？').then(() => startListening());
+    return () => {
+      recRef.current?.stop();
+      recRef.current = null;
+    };
+  }, [phase]);
+
+  async function say(text) {
+    setLines((l) => [...l, { role: 'ta', text }]);
+    await new Promise((resolve) => {
+      speak(text, { rate: voice.rate || 1, voiceName: voice.name || '' });
+      const wait = Math.min(20000, 900 + text.length * 200);
+      setTimeout(resolve, wait);
+    });
+  }
+
+  function startListening() {
+    if (!listenSupported() || phaseRef.current !== 'talking') return;
+    recRef.current?.stop();
+    recRef.current = listenStream({
+      onPartial: (t) => setInterim(t),
+      onFinal: async (text) => {
+        setInterim('');
+        if (busyRef.current || phaseRef.current !== 'talking') return;
+        busyRef.current = true;
+        recRef.current?.stop();
+        recRef.current = null;
+
+        setLines((l) => [...l, { role: 'me', text }]);
+        try {
+          const r = await callApi.turn(text);
+          if (r.reply) {
+            setLines((l) => [...l, { role: 'ta', text: r.reply }]);
+            speak(r.reply, { rate: voice.rate || 1, voiceName: voice.name || '' });
+            await new Promise((res) => setTimeout(res, Math.min(20000, 900 + r.reply.length * 200)));
+          }
+          if (r.hangUp) {
+            setPhase('ending');
+            busyRef.current = false;
+            finish();
+            return;
+          }
+        } catch (e) {
+          setErr(e.message);
+        }
+        busyRef.current = false;
+        if (phaseRef.current === 'talking') startListening();
+      },
+      onError: () => {
+        /* 听不到就继续听，不打断通话 */
+      }
+    });
+  }
+
+  async function finish() {
+    recRef.current?.stop();
+    recRef.current = null;
+    stopSpeak();
+    setPhase('ending');
+    try {
+      const r = await callApi.end();
+      setSummary(r.summary || '');
+      setPhase('done');
+      if (r.summary) speak('挂了。' + r.summary.slice(0, 30), { rate: voice.rate || 1 });
+    } catch (e) {
+      setErr(e.message);
+      setPhase('done');
+    }
+  }
+
+  function hangUp() {
+    if (phase === 'talking') {
+      say('那我先挂了。').then(finish);
+    } else {
+      finish();
+    }
+  }
+
+  const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+  const ss = String(seconds % 60).padStart(2, '0');
+
+  return (
+    <div className="call-overlay">
+      <div className="call-top">
+        <div className="call-name">Elliott</div>
+        <div className="call-state">
+          {phase === 'dialing' && '正在拨号…'}
+          {phase === 'ringing' && '回铃中…'}
+          {phase === 'talking' && `${mm}:${ss}`}
+          {phase === 'ending' && '挂断中…'}
+          {phase === 'done' && '已挂断'}
+        </div>
+      </div>
+
+      <div className="call-body">
+        {lines.slice(-6).map((l, i) => (
+          <div key={i} className={'call-line ' + l.role}>
+            {l.text}
+          </div>
+        ))}
+        {interim && <div className="call-line me interim">{interim}</div>}
+        {summary && (
+          <div className="call-summary">
+            <div className="call-summary-title">通话摘要</div>
+            <div>{summary}</div>
+          </div>
+        )}
+        {err && <div className="call-line" style={{ color: '#b4553f' }}>{err}</div>}
+      </div>
+
+      <div className="call-actions">
+        {phase === 'done' ? (
+          <button className="call-btn end" onClick={onClose}>
+            挂断
+          </button>
+        ) : (
+          <>
+            <button
+              className={'call-btn mute' + (muted ? ' on' : '')}
+              onClick={() => {
+                setMuted((m) => !m);
+                if (!muted) {
+                  recRef.current?.stop();
+                  recRef.current = null;
+                } else if (phaseRef.current === 'talking') {
+                  startListening();
+                }
+              }}
+            >
+              {muted ? '取消静音' : '静音'}
+            </button>
+            <button className="call-btn end" onClick={hangUp}>
+              挂断
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

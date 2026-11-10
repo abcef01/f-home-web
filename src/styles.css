@@ -2699,3 +2699,62 @@ body::before {
   );
   transition: background 2.5s ease;
 }
+
+/* 通话界面 */
+.call-overlay {
+  position: fixed; inset: 0; z-index: 60;
+  background: linear-gradient(180deg, #2a2622 0%, #17140f 100%);
+  color: #f4efe6;
+  display: flex; flex-direction: column;
+  padding: 40px 22px 34px;
+}
+.call-top { text-align: center; }
+.call-name { font-size: 22px; letter-spacing: 0.06em; }
+.call-state {
+  margin-top: 8px; font-size: 12px; color: rgba(244, 239, 230, 0.5);
+  letter-spacing: 0.1em; font-variant-numeric: tabular-nums;
+}
+.call-body {
+  flex: 1; display: flex; flex-direction: column; justify-content: flex-end;
+  gap: 10px; padding: 20px 0; overflow-y: auto;
+}
+.call-line {
+  font-size: 13.5px; line-height: 1.7; max-width: 88%;
+  padding: 9px 13px; border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  align-self: flex-start;
+}
+.call-line.me {
+  align-self: flex-end;
+  background: rgba(255, 255, 255, 0.12);
+}
+.call-line.interim { opacity: 0.45; font-style: italic; }
+.call-summary {
+  margin-top: 14px; padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px; font-size: 12px; line-height: 1.8;
+  color: rgba(244, 239, 230, 0.8);
+}
+.call-summary-title { font-size: 10.5px; letter-spacing: 0.12em; color: rgba(244, 239, 230, 0.45); margin-bottom: 6px; }
+.call-actions { display: flex; gap: 14px; justify-content: center; padding-top: 10px; }
+.call-btn {
+  border: 0; border-radius: 30px; cursor: pointer;
+  font-family: var(--font-ui); font-size: 13px; letter-spacing: 0.08em;
+  padding: 14px 34px;
+}
+.call-btn.mute { background: rgba(255, 255, 255, 0.12); color: #f4efe6; }
+.call-btn.mute.on { background: rgba(255, 255, 255, 0.28); }
+.call-btn.end { background: #b4553f; color: #fff; }
+
+/* 来电卡片 */
+.call-card {
+  margin-top: 8px; padding: 10px 12px;
+  border: 1px solid var(--line-2); border-radius: 8px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  font-size: 12px; color: var(--ink-2);
+}
+.call-card button {
+  border: 0; border-radius: 20px; cursor: pointer;
+  padding: 7px 18px; background: #b4553f; color: #fff;
+  font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.06em;
+}

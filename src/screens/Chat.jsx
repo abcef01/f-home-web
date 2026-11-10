@@ -35,6 +35,12 @@ function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAll
           {m.content && m.content !== '[表情]' && <div className="bubble">{m.content}</div>}
           {m.meta?.sticker && <img className="sticker-msg" src={m.meta.sticker} alt="表情" />}
           {m.meta?.image && <img className="chat-image" src={m.meta.image} alt="图片" />}
+          {m.meta?.callRequest && (
+            <div className="call-card">
+              <span>想给你打个电话</span>
+              <button onClick={() => onCall && onCall()}>接听</button>
+            </div>
+          )}
           {m.meta?.thought && <ThoughtBlock text={m.meta.thought} />}
           {speechSupported() && msgPlayable(m.content) && <SpeakButton text={m.content} voice={voice} />}
           {m.meta?.surf && (
@@ -87,7 +93,7 @@ function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAll
   );
 }
 
-export default function Chat({ voice = {}, onVoiceChange, onGo, showAvatars, avatars = {}, watchAllowed = false, watchEvery = 45 }) {
+export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvatars, avatars = {}, watchAllowed = false, watchEvery = 45 }) {
   const [messages, setMessages] = useState([]);
   const [convId, setConvId] = useState(null);
   const [input, setInput] = useState('');
@@ -460,6 +466,11 @@ export default function Chat({ voice = {}, onVoiceChange, onGo, showAvatars, ava
           </div>
         </div>
         <div className="chat-actions">
+          <button className="icon-btn" onClick={() => onCall && onCall()} title="打个电话">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <path d="M6.5 4.5h3l1.5 4-2 1.5a10 10 0 005 5l1.5-2 4 1.5v3a1.5 1.5 0 01-1.6 1.5A15.5 15.5 0 014.9 6.1 1.5 1.5 0 016.5 4.5z" />
+            </svg>
+          </button>
           <button
             className={'icon-btn' + (healthScanning ? ' watching' : '')}
             onClick={startHealthScan}
