@@ -83,6 +83,7 @@ export const api = {
 
   conversations: () => request('/api/conversations').then((r) => r.conversations),
   currentConversation: () => request('/api/conversation').then((r) => r.conversation),
+  device: (status) => deviceApi.report(status),
   messages: (conversationId) =>
     request('/api/conversations/' + conversationId + '/messages').then((r) => r.messages),
 
@@ -175,6 +176,11 @@ export const conversations = {
   rename: (id, title) =>
     request('/api/conversations/' + id, { method: 'PATCH', body: JSON.stringify({ title }) }),
   remove: (id) => request('/api/conversations/' + id, { method: 'DELETE' })
+};
+
+export const deviceApi = {
+  report: (status) => request('/api/device', { method: 'POST', body: JSON.stringify(status) }),
+  get: () => request('/api/device').then((r) => r.status)
 };
 
 export const heartbeatApi = {

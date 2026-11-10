@@ -6,7 +6,7 @@
  *   · /api/*：完全不碰，永远走网络（聊天必须实时）
  */
 
-const VERSION = 'bunny-v2';
+const VERSION = 'bunny-v3';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
@@ -72,14 +72,21 @@ self.addEventListener('fetch', (event) => {
    后台通知：即使 App 没开着，也能收到「它说话了」
    ============================================================ */
 self.addEventListener('push', (event) => {
+  let payload = { title: 'Elliott', body: '给你留了一句话', url: '/#chat' };
+  try {
+    if (event.data) payload = { ...payload, ...event.data.json() };
+  } catch {
+    /* 没有正文就用默认文案 */
+  }
+
   event.waitUntil(
-    self.registration.showNotification('Elliott', {
-      body: '给你留了一句话',
+    self.registration.showNotification(payload.title || 'Elliott', {
+      body: payload.body || '给你留了一句话',
       icon: '/icons/icon-192.png',
       badge: '/icons/icon-192.png',
       tag: 'bunny-message',
       renotify: true,
-      data: { url: '/#chat' }
+      data: { url: payload.url || '/#chat' }
     })
   );
 });

@@ -12,6 +12,7 @@ import Games from './screens/Games.jsx';
 import Lock from './components/Lock.jsx';
 import InstallHint from './components/InstallHint.jsx';
 import { authApi, uiSettings, avatarsApi } from './api.js';
+import { startDeviceReporting } from './lib/device.js';
 
 const DEFAULTS = {
   theme: 'cream',
@@ -88,6 +89,12 @@ export default function App() {
     return () => {
       alive = false;
     };
+  }, [authState]);
+
+  /* 手机状态上报：进站、切前台、每 5 分钟 */
+  useEffect(() => {
+    if (authState !== 'ok') return;
+    return startDeviceReporting();
   }, [authState]);
 
   /* 头像 */
