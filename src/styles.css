@@ -2469,3 +2469,46 @@ body.show-avatars .msg.me { flex-direction: row; }
 
 /* 表情包空状态占满整行 */
 .sticker-grid .hint-line { grid-column: 1 / -1; }
+
+/* =========================================================
+   看屏幕
+   ========================================================= */
+.icon-btn.watching { color: var(--accent-deep); }
+.icon-btn.watching::after {
+  content: '';
+  position: absolute; width: 6px; height: 6px;
+  margin: 0 0 14px 14px; border-radius: 50%;
+  background: #d2705a;
+  animation: watchPulse 1.8s infinite ease-in-out;
+}
+.icon-btn { position: relative; }
+@keyframes watchPulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+
+.watch-video { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+.watch-bar {
+  flex: 0 0 auto;
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 16px 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  background: var(--paper);
+  font-family: var(--font-ui);
+  font-size: 10px; letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.watch-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #d2705a; flex: 0 0 auto;
+  animation: watchPulse 1.8s infinite ease-in-out;
+}
+.watch-bar button {
+  margin-left: auto; border: 0; background: none; cursor: pointer;
+  color: var(--ink-2); font-family: var(--font-ui); font-size: 10px;
+  letter-spacing: 0.06em; text-decoration: underline; text-underline-offset: 3px;
+}
+.watch-err {
+  margin: 0 16px 6px; font-size: 10.5px; color: #b4553f;
+  font-family: var(--font-ui); letter-spacing: 0.04em;
+}

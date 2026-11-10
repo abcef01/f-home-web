@@ -176,6 +176,11 @@ export const conversations = {
   remove: (id) => request('/api/conversations/' + id, { method: 'DELETE' })
 };
 
+export const watchApi = {
+  frame: (image, conversationId) =>
+    request('/api/watch', { method: 'POST', body: JSON.stringify({ image, conversationId }) })
+};
+
 export const avatarsApi = {
   get: () => request('/api/avatars').then((r) => r.avatars || {}),
   upload: (who, dataUrl) =>

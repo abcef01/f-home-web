@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
-import { api, conversations as convApi, stickersApi } from '../api.js';
+import { api, conversations as convApi, stickersApi, watchApi } from '../api.js';
 import AvatarImg from '../components/AvatarImg.jsx';
 
 const NAME = 'Elliott';
@@ -59,6 +59,11 @@ export default function Chat({ onGo, showAvatars, avatars = {} }) {
   const [loaded, setLoaded] = useState(false);
   const [stickers, setStickers] = useState([]);
   const [stickerSheet, setStickerSheet] = useState(false);
+  const [watching, setWatching] = useState(false);
+  const [watchErr, setWatchErr] = useState('');
+  const shareRef = useRef(null);
+  const videoRef = useRef(null);
+  const timerRef = useRef(null);
   const listRef = useRef(null);
 
   /* 打开时加载历史 */
@@ -138,6 +143,65 @@ export default function Chat({ onGo, showAvatars, avatars = {} }) {
     }
   }
 
+  /* ---------- 看屏幕 ---------- */
+  const WATCH_EVERY = 45000;
+
+  function captureFrame() {
+    const v = videoRef.current;
+    if (!v || !v.videoWidth) return null;
+    const w = 860;
+    const scale = Math.min(1, w / v.videoWidth);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(v.videoWidth * scale);
+    canvas.height = Math.round(v.videoHeight * scale);
+    canvas.getContext('2d').drawImage(v, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', 0.6);
+  }
+
+  async function tick() {
+    if (!videoRef.current) return;
+    const image = captureFrame();
+    if (!image) return;
+    try {
+      const r = await watchApi.frame(image, convId);
+      if (r.spoke && r.message) {
+        setMessages((m) => [...m, r.message]);
+        if (r.conversationId) setConvId(r.conversationId);
+      }
+    } catch (e) {
+      setWatchErr(e.message);
+    }
+  }
+
+  async function startWatch() {
+    setWatchErr('');
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 2 }, audio: false });
+      shareRef.current = stream;
+      const v = videoRef.current;
+      v.srcObject = stream;
+      await v.play().catch(() => {});
+      setWatching(true);
+      stream.getVideoTracks()[0].addEventListener('ended', stopWatch);
+      setTimeout(tick, 2500);
+      timerRef.current = setInterval(tick, WATCH_EVERY);
+    } catch (e) {
+      setWatchErr(e.name === 'NotAllowedError' ? '你取消了共享' : e.message);
+    }
+  }
+
+  function stopWatch() {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = null;
+    if (shareRef.current) {
+      shareRef.current.getTracks().forEach((t) => t.stop());
+      shareRef.current = null;
+    }
+    setWatching(false);
+  }
+
+  useEffect(() => () => stopWatch(), []);
+
   function newConversation() {
     setSheet(null);
     setConvId(null);
@@ -195,6 +259,16 @@ export default function Chat({ onGo, showAvatars, avatars = {} }) {
           </div>
         </div>
         <div className="chat-actions">
+          <button
+            className={'icon-btn' + (watching ? ' watching' : '')}
+            onClick={() => (watching ? stopWatch() : startWatch())}
+            title={watching ? '停止共享屏幕' : '让他看我的屏幕'}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <path d="M2.5 12s3.6-6 9.5-6 9.5 6 9.5 6-3.6 6-9.5 6-9.5-6-9.5-6Z" />
+              <circle cx="12" cy="12" r="2.6" />
+            </svg>
+          </button>
           <button className="icon-btn" onClick={() => setSheet('conversations')} title="所有对话">
             <svg viewBox="0 0 24 24">
               <path d="M4 6h16M4 12h16M4 18h10" />
@@ -241,6 +315,16 @@ export default function Chat({ onGo, showAvatars, avatars = {} }) {
           </div>
         )}
       </div>
+
+      {watching && (
+        <div className="watch-bar">
+          <span className="watch-dot" />
+          <span>正看着你的屏幕 · 每 45 秒看一眼</span>
+          <button onClick={stopWatch}>停止</button>
+        </div>
+      )}
+      {watchErr && <div className="watch-err">{watchErr}</div>}
+      <video ref={videoRef} className="watch-video" muted playsInline />
 
       <div className="composer">
         <button className="sticker-btn" onClick={() => setStickerSheet(true)} title="表情包">
