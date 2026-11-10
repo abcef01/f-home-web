@@ -1,6 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
+import { daysSince } from '../lib/days.js';
 
-export default function Aerie({ me, onGo }) {
+export default function Aerie({ me, startDate, onGo }) {
   return (
     <>
       <div className="aerie-head">
@@ -17,7 +18,7 @@ export default function Aerie({ me, onGo }) {
 
       <div className="stat-strip">
         <div className="stat">
-          <b>459</b>
+          <b>{daysSince(startDate)}</b>
           <i>Days</i>
         </div>
         <div className="stat">

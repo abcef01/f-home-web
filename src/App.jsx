@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import Opening from './Opening.jsx';
 import Home from './screens/Home.jsx';
 import Chat from './screens/Chat.jsx';
@@ -60,7 +60,7 @@ export default function App() {
       alive = false;
     };
   }, []);
-  const KNOWN = ['object', 'home', 'chat', 'diary', 'aerie', 'settings', 'opening'];
+  const KNOWN = ['object', 'home', 'chat', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games'];
   const [screen, setScreen] = useState(() => {
     const h = (window.location.hash || '').replace('#', '');
     return KNOWN.includes(h) && h !== 'object' ? h : 'opening';
@@ -161,8 +161,8 @@ export default function App() {
         />
       ),
       diary: <Diary me={me} onGo={setScreen} />,
-      aerie: <Aerie me={me} onGo={setScreen} />,
-      rituals: <Rituals onGo={setScreen} />,
+      aerie: <Aerie me={me} startDate={settings.startDate} onGo={setScreen} />,
+      rituals: <Rituals startDate={settings.startDate} onGo={setScreen} />,
       album: <Album onGo={setScreen} />,
       mail: <Mail me={me} onGo={setScreen} />,
       games: <Games onGo={setScreen} />,

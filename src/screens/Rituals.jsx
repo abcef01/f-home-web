@@ -1,6 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
+import { daysSince, fmtToday } from '../lib/days.js';
 
-export default function Rituals({ onGo }) {
+export default function Rituals({ startDate, onGo }) {
   return (
     <>
       <div className="page-head">
@@ -11,7 +12,7 @@ export default function Rituals({ onGo }) {
         </button>
         <div>
           <div className="set-title">日常</div>
-          <div className="set-sub">11 月 8 日 · 周六 · 在一起第 459 天</div>
+          <div className="set-sub">{fmtToday()} · 在一起第 {daysSince(startDate)} 天</div>
         </div>
       </div>
 

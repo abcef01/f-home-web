@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { daysSince, fmtSince } from '../lib/days.js';
 
 const QUICK = [
   { id: 'watch', label: '一起看', go: null },
@@ -11,23 +12,6 @@ const QUICK = [
   { id: 'rituals', label: '日常', go: 'rituals' },
   { id: 'memory', label: '记忆', go: 'aerie' }
 ];
-
-/* 在一起的天数：从开始日期算到今天，含当天 */
-function daysSince(startISO) {
-  const start = new Date(startISO + 'T00:00:00');
-  if (Number.isNaN(start.getTime())) return 0;
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const diff = Math.floor((today - start) / 86400000);
-  return Math.max(diff + 1, 0);
-}
-
-function fmtSince(startISO) {
-  const d = new Date(startISO + 'T00:00:00');
-  if (Number.isNaN(d.getTime())) return '';
-  const p = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()} · ${p(d.getMonth() + 1)} · ${p(d.getDate())}`;
-}
 
 export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo }) {
   const days = daysSince(startDate);
