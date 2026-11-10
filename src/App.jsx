@@ -10,7 +10,7 @@ import Album from './screens/Album.jsx';
 import Mail from './screens/Mail.jsx';
 import Games from './screens/Games.jsx';
 import Lock from './components/Lock.jsx';
-import { authApi } from './api.js';
+import { authApi, uiSettings } from './api.js';
 
 const DEFAULTS = {
   theme: 'cream',
@@ -45,6 +45,8 @@ export default function App() {
   const [settings, setSettings] = useState(load);
   /* 口令锁：checking -> ok / locked */
   const [authState, setAuthState] = useState('checking');
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState('');
 
   useEffect(() => {
     let alive = true;
@@ -63,6 +65,44 @@ export default function App() {
   });
 
   const update = (patch) => setSettings((s) => ({ ...s, ...patch }));
+
+  /* 进站后拉一次云端设置（换设备/清缓存也能恢复） */
+  useEffect(() => {
+    if (authState !== 'ok') return;
+    let alive = true;
+    uiSettings
+      .get()
+      .then((v) => {
+        if (alive && v && typeof v === 'object') setSettings((s) => ({ ...s, ...v }));
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [authState]);
+
+  /* 改动后 1.2 秒自动同步，手滑也不会丢 */
+  useEffect(() => {
+    if (authState !== 'ok') return;
+    const t = setTimeout(() => {
+      uiSettings.save(settings).catch(() => {});
+    }, 1200);
+    return () => clearTimeout(t);
+  }, [settings, authState]);
+
+  async function saveNow() {
+    setSaving(true);
+    setSaveMsg('');
+    try {
+      await uiSettings.save(settings);
+      setSaveMsg('已保存');
+    } catch (e) {
+      setSaveMsg('保存失败：' + e.message);
+    } finally {
+      setSaving(false);
+      setTimeout(() => setSaveMsg(''), 2600);
+    }
+  }
 
   useEffect(() => {
     try {
@@ -124,6 +164,9 @@ export default function App() {
         <Settings
           settings={settings}
           update={update}
+          onSave={saveNow}
+          saving={saving}
+          saveMsg={saveMsg}
           onGo={setScreen}
         />
       )

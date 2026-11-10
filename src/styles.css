@@ -2378,3 +2378,20 @@ body.show-avatars .msg.me { flex-direction: row-reverse; }
 }
 .trace.open .trace-body { max-height: 220px; overflow-y: auto; opacity: 1; }
 .trace-line { font-size: 11.5px; line-height: 1.95; padding: 0 2px 12px; white-space: pre-wrap; }
+
+/* 设置页底部保存条 */
+.save-bar {
+  position: sticky; bottom: 0;
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0 6px;
+  background: linear-gradient(to top, var(--paper) 76%, transparent);
+}
+.save-btn {
+  padding: 11px 26px; border: 0; border-radius: 2px;
+  background: var(--ink); color: var(--paper);
+  font-family: var(--font-ui); font-size: 11.5px; letter-spacing: 0.12em;
+  cursor: pointer;
+}
+.save-btn:disabled { opacity: 0.45; cursor: default; }
+.save-msg { font-size: 11px; color: var(--accent-deep); letter-spacing: 0.04em; }
+.save-msg.err { color: #b4553f; }

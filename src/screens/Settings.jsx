@@ -29,7 +29,7 @@ function Slider({ label, value, min, max, step, onChange, digits = 2 }) {
   );
 }
 
-export default function Settings({ settings, update, onGo }) {
+export default function Settings({ settings, update, onGo, onSave, saving, saveMsg }) {
   const s = settings;
   return (
     <>
@@ -186,6 +186,14 @@ export default function Settings({ settings, update, onGo }) {
         </div>
       </div>
       <div style={{ height: 14 }} />
+
+      {/* 保存条：改完点一下，存到云端 */}
+      <div className="save-bar">
+        <button className="save-btn" onClick={onSave} disabled={saving}>
+          {saving ? '保存中…' : '保存设置'}
+        </button>
+        {saveMsg && <span className={'save-msg' + (saveMsg.includes('失败') ? ' err' : '')}>{saveMsg}</span>}
+      </div>
     </>
   );
 }

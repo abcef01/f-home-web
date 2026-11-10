@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 后端接口封装
  * ------------------------------------------------------------
  * 默认连线上后端；本地开发时在 .env.local 里写
@@ -174,6 +174,11 @@ export const conversations = {
   rename: (id, title) =>
     request('/api/conversations/' + id, { method: 'PATCH', body: JSON.stringify({ title }) }),
   remove: (id) => request('/api/conversations/' + id, { method: 'DELETE' })
+};
+
+export const uiSettings = {
+  get: () => request('/api/settings/ui').then((r) => r.value),
+  save: (value) => request('/api/settings/ui', { method: 'PUT', body: JSON.stringify(value) })
 };
 
 export const chatSettings = {
