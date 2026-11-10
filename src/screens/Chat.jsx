@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
-import { api, conversations as convApi, stickersApi, watchApi, heartbeatApi } from '../api.js';
+import { api, stickersApi, watchApi, heartbeatApi } from '../api.js';
 import AvatarImg from '../components/AvatarImg.jsx';
 
 const NAME = 'Elliott';
@@ -71,7 +71,6 @@ function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAll
 export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = false, watchEvery = 45 }) {
   const [messages, setMessages] = useState([]);
   const [convId, setConvId] = useState(null);
-  const [convList, setConvList] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
@@ -87,19 +86,18 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
   const videoRef = useRef(null);
   const timerRef = useRef(null);
   const listRef = useRef(null);
+  const inputRef = useRef(null);
 
   /* 打开时加载历史 */
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const list = await convApi.list();
+        const conv = await api.currentConversation();
         if (!alive) return;
-        setConvList(list);
-        const latest = list.find((c) => c.title !== '第一个对话') || list[0];
-        if (latest) {
-          setConvId(latest.id);
-          const history = await api.messages(latest.id);
+        if (conv) {
+          setConvId(conv.id);
+          const history = await api.messages(conv.id);
           if (alive) setMessages(history);
         }
       } catch (e) {
@@ -164,7 +162,6 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
       const res = await api.chat({ conversationId: convId, message: text });
       setConvId(res.conversationId);
       setMessages((m) => [...m.filter((x) => x.id !== optimistic.id), res.userMessage, res.reply]);
-      convApi.list().then(setConvList).catch(() => {});
     } catch (e) {
       setMessages((m) => m.filter((x) => x.id !== optimistic.id));
       setError(e.message);
@@ -184,7 +181,6 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
       const res = await api.chat({ conversationId: convId, message: '[表情]', sticker: url });
       setConvId(res.conversationId);
       setMessages((m) => [...m.filter((x) => x.id !== optimistic.id), res.userMessage, res.reply]);
-      convApi.list().then(setConvList).catch(() => {});
     } catch (e) {
       setMessages((m) => m.filter((x) => x.id !== optimistic.id));
       setError(e.message);
@@ -256,37 +252,8 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
 
   useEffect(() => () => stopWatch(), []);
 
-  function newConversation() {
-    setSheet(null);
-    setConvId(null);
-    setMessages([]);
-    setError('');
-  }
 
-  async function openConversation(id) {
-    setSheet(null);
-    setError('');
-    try {
-      setConvId(id);
-      setMessages(await api.messages(id));
-    } catch (e) {
-      setError(e.message);
-    }
-  }
 
-  async function removeConversation(id, e) {
-    e.stopPropagation();
-    try {
-      await convApi.remove(id);
-      setConvList((l) => l.filter((c) => c.id !== id));
-      if (id === convId) {
-        setConvId(null);
-        setMessages([]);
-      }
-    } catch (err) {
-      setError(err.message);
-    }
-  }
 
   return (
     <>
@@ -327,16 +294,7 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
               <circle cx="12" cy="12" r="2.6" />
             </svg>
           </button>
-          <button className="icon-btn" onClick={() => setSheet('conversations')} title="所有对话">
-            <svg viewBox="0 0 24 24">
-              <path d="M4 6h16M4 12h16M4 18h10" />
-            </svg>
-          </button>
-          <button className="icon-btn" onClick={newConversation} title="新对话">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </button>
+
         </div>
       </header>
 
@@ -406,14 +364,22 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
           <svg viewBox="0 0 24 24">
             <path d="M12 5.5v13M5.5 12h13" />
           </svg>
-          <input
+          <textarea
+            ref={inputRef}
+            rows={1}
             value={input}
-            placeholder="说点什么…"
-            onChange={(e) => setInput(e.target.value)}
+            placeholder="说点什么…（Shift+Enter 换行）"
+            onChange={(e) => {
+              setInput(e.target.value);
+              const el = e.target;
+              el.style.height = 'auto';
+              el.style.height = Math.min(140, el.scrollHeight) + 'px';
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 send();
+                if (inputRef.current) inputRef.current.style.height = 'auto';
               }
             }}
           />
@@ -441,31 +407,6 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
                 ))}
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {sheet === 'conversations' && (
-        <div className="sheet-mask on" onClick={() => setSheet(null)}>
-          <div className="sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="grab" />
-            <div className="sheet-title">所有对话</div>
-            <div className="conv-list">
-              {convList.length === 0 && <div className="hint-line">还没有对话</div>}
-              {convList.map((c) => (
-                <div
-                  key={c.id}
-                  className={'conv-row' + (c.id === convId ? ' on' : '')}
-                  onClick={() => openConversation(c.id)}
-                >
-                  <span className="conv-title">{c.title || '未命名'}</span>
-                  <span className="conv-time">{fmtTime(c.updated_at)}</span>
-                  <button className="conv-del" onClick={(e) => removeConversation(c.id, e)} title="删除">
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       )}

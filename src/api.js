@@ -82,6 +82,7 @@ export const api = {
     }),
 
   conversations: () => request('/api/conversations').then((r) => r.conversations),
+  currentConversation: () => request('/api/conversation').then((r) => r.conversation),
   messages: (conversationId) =>
     request('/api/conversations/' + conversationId + '/messages').then((r) => r.messages),
 
