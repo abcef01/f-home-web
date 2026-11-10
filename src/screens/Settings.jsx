@@ -5,6 +5,7 @@ import StickerManager from '../components/StickerManager.jsx';
 import AvatarPicker from '../components/AvatarPicker.jsx';
 import NotifyToggle from '../components/NotifyToggle.jsx';
 import { api, auth } from '../api.js';
+import { factsApi } from '../api.js';
 
 const THEMES = [
   ['cream', '#B08A6A', '素色奶霜'],
@@ -78,6 +79,11 @@ export default function Settings({ settings, update, onGo, onSave, saving, saveM
           关掉这个开关，他就不能看；聊天里他也能主动请求，你可以当场拒绝。
           共享时底部有停止键，浏览器顶部也有。
         </div>
+      </div>
+
+      <div className="group">
+        <div className="gl">重要事实</div>
+        <FactsBox />
       </div>
 
       <div className="group">
@@ -252,5 +258,63 @@ export default function Settings({ settings, update, onGo, onSave, saving, saveM
         {saveMsg && <span className={'save-msg' + (saveMsg.includes('失败') ? ' err' : '')}>{saveMsg}</span>}
       </div>
     </>
+  );
+}
+
+/* 重要事实：生日、忌讳、约定——这些永远不会被记忆压缩掉 */
+function FactsBox() {
+  const [list, setList] = React.useState([]);
+  const [text, setText] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  const [err, setErr] = React.useState('');
+
+  React.useEffect(() => {
+    factsApi.list().then(setList).catch((e) => setErr(e.message));
+  }, []);
+
+  async function add() {
+    const t = text.trim();
+    if (!t || busy) return;
+    setBusy(true);
+    setErr('');
+    try {
+      setList(await factsApi.add(t));
+      setText('');
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function remove(id) {
+    try {
+      setList(await factsApi.remove(id));
+    } catch (e) {
+      setErr(e.message);
+    }
+  }
+
+  return (
+    <div className="facts-box">
+      {list.length === 0 && <div className="hint-line">还没有。写点它会一直记得的事。</div>}
+      {list.map((f) => (
+        <div className="fact-row" key={f.id}>
+          <span>{f.text}</span>
+          <button onClick={() => remove(f.id)} title="删除">×</button>
+        </div>
+      ))}
+      <div className="fact-add">
+        <input
+          value={text}
+          placeholder="比如：她生日 3 月 14 日"
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && add()}
+        />
+        <button onClick={add} disabled={busy || !text.trim()}>{busy ? '…' : '记住'}</button>
+      </div>
+      <div className="hint-line">这些会一直带给它，不会被记忆压缩掉。</div>
+      {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
+    </div>
   );
 }

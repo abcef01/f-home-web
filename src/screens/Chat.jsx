@@ -191,6 +191,15 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
     }
   }
 
+  /* 一条回复拆成几个气泡，间隔一点时间冒出来 */
+  function appendReplies(list) {
+    const items = (list || []).filter(Boolean);
+    items.forEach((msg, i) => {
+      setTimeout(() => setMessages((m) => [...m, msg]), i * 750);
+    });
+    return items.length * 750;
+  }
+
   /* 停顿 7 秒后才回；期间又发消息就重新计时 */
   function scheduleReply(id) {
     if (replyTimer.current) clearTimeout(replyTimer.current);
@@ -198,11 +207,13 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
       setSending(true);
       try {
         const r = await api.respond(id);
-        if (r.reply) setMessages((m) => [...m, r.reply]);
+        const list = r.replies && r.replies.length ? r.replies : r.reply ? [r.reply] : [];
+        const wait = appendReplies(list);
+        setTimeout(() => setSending(false), wait);
       } catch (e) {
         setError(e.message);
-      } finally {
         setSending(false);
+      } finally {
         replyTimer.current = null;
       }
     }, 7000);
@@ -218,7 +229,8 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
     try {
       const res = await api.chat({ conversationId: convId, message: '[表情]', sticker: url });
       setConvId(res.conversationId);
-      setMessages((m) => [...m.filter((x) => x.id !== optimistic.id), res.userMessage, res.reply]);
+      setMessages((m) => [...m.filter((x) => x.id !== optimistic.id), res.userMessage]);
+      appendReplies(res.replies && res.replies.length ? res.replies : [res.reply]);
     } catch (e) {
       setMessages((m) => m.filter((x) => x.id !== optimistic.id));
       setError(e.message);
@@ -305,7 +317,8 @@ export default function Chat({ onGo, showAvatars, avatars = {}, watchAllowed = f
 
       const res = await api.chat({ conversationId: convId, message: '（发了一张图片）', image: dataUrl });
       setConvId(res.conversationId);
-      setMessages((m) => [...m, res.userMessage, res.reply]);
+      setMessages((m) => [...m, res.userMessage]);
+      appendReplies(res.replies && res.replies.length ? res.replies : [res.reply]);
     } catch (e) {
       setError(e.message);
     } finally {

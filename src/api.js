@@ -186,6 +186,12 @@ export const deviceApi = {
   get: () => request('/api/device').then((r) => r.status)
 };
 
+export const factsApi = {
+  list: () => request('/api/facts').then((r) => r.facts || []),
+  add: (text) => request('/api/facts', { method: 'POST', body: JSON.stringify({ text }) }).then((r) => r.facts || []),
+  remove: (id) => request('/api/facts/' + id, { method: 'DELETE' }).then((r) => r.facts || [])
+};
+
 export const heartbeatApi = {
   tick: () => request('/api/heartbeat'),
   state: () => request('/api/state')
