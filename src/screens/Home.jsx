@@ -4,6 +4,7 @@ import { daysSince, fmtSince } from '../lib/days.js';
 const QUICK = [
   { id: 'watch', label: '一起看', go: null },
   { id: 'listen', label: '一起听', go: null },
+  { id: 'read', label: '书架', go: 'read' },
   { id: 'mail', label: '信箱', go: 'mail' },
   { id: 'album', label: '相册', go: 'album' },
   { id: 'tarot', label: '塔罗', go: null },
@@ -98,6 +99,14 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo }) 
 }
 
 function CellIcon({ id }) {
+  if (id === 'read') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.1">
+        <path d="M4 5.5h6.5a1.5 1.5 0 011.5 1.5v12a2 2 0 00-2-2H4z" />
+        <path d="M20 5.5h-6.5A1.5 1.5 0 0012 7v12a2 2 0 012-2h6z" />
+      </svg>
+    );
+  }
   const paths = {
     watch: (
       <>

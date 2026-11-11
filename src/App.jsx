@@ -10,6 +10,7 @@ import Rituals from './screens/Rituals.jsx';
 import Album from './screens/Album.jsx';
 import Mail from './screens/Mail.jsx';
 import Games from './screens/Games.jsx';
+import Reader from './screens/Reader.jsx';
 import Lock from './components/Lock.jsx';
 import InstallHint from './components/InstallHint.jsx';
 import { authApi, uiSettings, avatarsApi, drivesApi } from './api.js';
@@ -68,7 +69,7 @@ export default function App() {
       alive = false;
     };
   }, []);
-  const KNOWN = ['object', 'home', 'chat', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games', 'call'];
+  const KNOWN = ['object', 'home', 'chat', 'read', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games', 'call'];
   const [screen, setScreen] = useState(() => {
     const h = (window.location.hash || '').replace('#', '');
     return KNOWN.includes(h) && h !== 'object' ? h : 'opening';

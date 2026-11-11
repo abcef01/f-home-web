@@ -192,6 +192,21 @@ export const factsApi = {
   remove: (id) => request('/api/facts/' + id, { method: 'DELETE' }).then((r) => r.facts || [])
 };
 
+export const booksApi = {
+  list: () => request('/api/books'),
+  upload: (filename, base64) => request('/api/books/upload', { method: 'POST', body: JSON.stringify({ filename, base64 }) }),
+  book: (id) => request('/api/books/' + id),
+  chapter: (id, i) => request('/api/books/' + id + '/chapter/' + i),
+  progress: (id, chapter, page, percent) =>
+    request('/api/books/' + id + '/progress', { method: 'POST', body: JSON.stringify({ chapter, page, percent }) }),
+  marks: (id) => request('/api/books/' + id + '/marks'),
+  annotate: (id, payload) => request('/api/books/' + id + '/annotation', { method: 'POST', body: JSON.stringify(payload) }),
+  unannotate: (id, aid) => request('/api/books/' + id + '/annotation/' + aid, { method: 'DELETE' }),
+  bookmark: (id, payload) => request('/api/books/' + id + '/bookmark', { method: 'POST', body: JSON.stringify(payload) }),
+  unbookmark: (id, bid) => request('/api/books/' + id + '/bookmark/' + bid, { method: 'DELETE' }),
+  remove: (id) => request('/api/books/' + id, { method: 'DELETE' })
+};
+
 export const diaryApi = {
   month: (month) => request('/api/diary' + (month ? '?month=' + month : '')),
   write: (payload) => request('/api/diary/entry', { method: 'POST', body: JSON.stringify(payload) }),

@@ -2873,3 +2873,119 @@ body::before {
   font-family: var(--font-ui); font-size: 11px;
 }
 .quest-rewards button:disabled { opacity: 0.4; }
+
+
+/* ================= 阅读器 ================= */
+.reader-shell {
+  position: fixed; inset: 0; z-index: 40;
+  display: flex; flex-direction: column;
+  background: var(--paper);
+  color: var(--ink);
+}
+.reader-top {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.reader-title {
+  flex: 1; font-size: 12px; letter-spacing: 0.06em;
+  color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.reader-btn {
+  border: 1px solid var(--line-2); background: transparent; color: var(--ink-2);
+  border-radius: 2px; padding: 6px 12px; cursor: pointer;
+  font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.06em;
+}
+.book-list { flex: 1; overflow-y: auto; padding: 6px 14px 30px; }
+.book-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 0; border-bottom: 1px solid var(--line);
+}
+.book-main { flex: 1; cursor: pointer; }
+.book-name { font-size: 14px; color: var(--ink); }
+.book-meta { margin-top: 4px; font-size: 10.5px; color: var(--muted); letter-spacing: 0.03em; }
+.book-del { border: 0; background: none; color: var(--muted); font-size: 16px; cursor: pointer; }
+
+/* 正文：多列排版 + 横向平移 */
+.reader-viewport {
+  flex: 1; position: relative; overflow: hidden;
+}
+.reader-pages {
+  column-fill: auto;
+  transform: translateX(0);
+  transition: transform 0.22s ease;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--ink);
+}
+.reader-foot {
+  display: flex; justify-content: space-between;
+  padding: 8px 18px 14px; font-size: 10px; color: var(--muted);
+  letter-spacing: 0.08em; font-variant-numeric: tabular-nums;
+}
+.reader-sheet {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: var(--paper); border-top: 1px solid var(--line);
+  padding: 16px 18px 22px; display: flex; flex-direction: column; gap: 12px;
+}
+.reader-sheet label {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 11px; color: var(--ink-2); letter-spacing: 0.06em;
+}
+.reader-sheet label input { flex: 1; }
+.reader-sheet label b { width: 34px; text-align: right; font-weight: 500; color: var(--ink-3); }
+.reader-sheet-row { display: flex; gap: 8px; }
+.reader-toggle {
+  flex: 1; padding: 9px 0; border: 1px solid var(--line-2); background: transparent;
+  color: var(--ink-2); border-radius: 2px; cursor: pointer;
+  font-family: var(--font-ui); font-size: 11px;
+}
+.reader-toggle.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* 深色 */
+.reader-view.dark {
+  --paper: #17140f;
+  --ink: #ece5d8;
+  --ink-2: #c9c0b0;
+  --ink-3: #a89f8f;
+  --muted: #7d7566;
+  --line: #2a251d;
+  --line-2: #3a342a;
+}
+
+/* 书架进度条 + 批注/书签 */
+.book-bar { margin-top: 8px; height: 2px; background: var(--line); border-radius: 1px; overflow: hidden; }
+.book-bar i { display: block; height: 100%; background: var(--ink-3); }
+.reader-float {
+  position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%);
+  border: 0; border-radius: 20px; padding: 10px 18px;
+  background: var(--ink); color: var(--paper); cursor: pointer;
+  font-family: var(--font-ui); font-size: 11.5px; letter-spacing: 0.03em;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+}
+.reader-quote {
+  font-size: 12px; line-height: 1.8; color: var(--ink-2);
+  border-left: 2px solid var(--line-2); padding-left: 10px;
+  max-height: 90px; overflow-y: auto;
+}
+.reader-note {
+  width: 100%; min-height: 70px; resize: vertical;
+  border: 1px solid var(--line-2); border-radius: 2px; padding: 10px;
+  background: transparent; color: var(--ink); font-family: inherit; font-size: 12px;
+}
+.reader-marks {
+  position: absolute; left: 0; right: 0; top: 52px; bottom: 0;
+  background: var(--paper); display: flex; flex-direction: column;
+}
+.reader-marks-head {
+  display: flex; gap: 14px; align-items: center;
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+  font-size: 11px; color: var(--ink-2); letter-spacing: 0.06em;
+}
+.reader-marks-head button { margin-left: auto; border: 0; background: none; font-size: 18px; color: var(--muted); cursor: pointer; }
+.reader-marks-list { flex: 1; overflow-y: auto; padding: 6px 16px 24px; }
+.mark-row { display: flex; align-items: flex-start; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.mark-main { flex: 1; cursor: pointer; display: flex; flex-direction: column; gap: 3px; }
+.mark-main b { font-size: 12px; font-weight: 500; color: var(--ink); }
+.mark-main span { font-size: 10.5px; color: var(--muted); line-height: 1.6; }
+.mark-row button { border: 0; background: none; color: var(--muted); font-size: 15px; cursor: pointer; }
