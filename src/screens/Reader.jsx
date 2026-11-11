@@ -34,6 +34,7 @@ export default function Reader({ onGo }) {
   const fileRef = useRef(null);
   const resumeRef = useRef(null);
   const saveTimer = useRef(null);
+  const touchRef = useRef({ x: 0, y: 0, swiped: false });
 
   useEffect(() => {
     booksApi.list().then((r) => setBooks(r.books || [])).catch((e) => setErr(e.message));
@@ -295,11 +296,30 @@ export default function Reader({ onGo }) {
       <div
         className="reader-viewport"
         ref={viewportRef}
-        onClick={(e) => {
+        onClick={() => {
+          /* 滑过就不算点击 */
+          if (touchRef.current.swiped) {
+            touchRef.current.swiped = false;
+            return;
+          }
           if (window.getSelection()?.toString().trim()) return;
-          const rect = e.currentTarget.getBoundingClientRect();
-          if (e.clientX - rect.left < rect.width / 2) nextPage();
-          else prevPage();
+          /* 点哪里都是下一页 */
+          nextPage();
+        }}
+        onTouchStart={(e) => {
+          const t = e.touches[0];
+          touchRef.current = { x: t.clientX, y: t.clientY, swiped: false };
+        }}
+        onTouchEnd={(e) => {
+          const t = e.changedTouches[0];
+          const dx = t.clientX - touchRef.current.x;
+          const dy = t.clientY - touchRef.current.y;
+          if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+            touchRef.current.swiped = true;
+            /* 从左往右滑 = 上一页；从右往左滑 = 下一页 */
+            if (dx > 0) prevPage();
+            else nextPage();
+          }
         }}
         onMouseUp={onSelect}
         onTouchEnd={onSelect}
