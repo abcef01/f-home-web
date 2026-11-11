@@ -196,6 +196,7 @@ export const diaryApi = {
   month: (month) => request('/api/diary' + (month ? '?month=' + month : '')),
   write: (payload) => request('/api/diary/entry', { method: 'POST', body: JSON.stringify(payload) }),
   like: (id) => request('/api/diary/like', { method: 'POST', body: JSON.stringify({ id }) }),
+  comment: (id, text) => request('/api/diary/comment', { method: 'POST', body: JSON.stringify({ id, text }) }),
   autowrite: () => request('/api/diary/autowrite', { method: 'POST', body: '{}' })
 };
 

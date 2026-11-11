@@ -2829,3 +2829,13 @@ body::before {
 .diary-day { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
 .diary-day-head { font-size: 11px; letter-spacing: 0.1em; color: var(--muted); }
 .duo-card.ta { background: rgba(0, 0, 0, 0.015); }
+
+
+/* 手帐留言 */
+.diary-comments { margin-top: 6px; padding-left: 8px; border-left: 2px solid var(--line); }
+.diary-comment { font-size: 11.5px; line-height: 1.7; color: var(--ink-3); }
+.diary-comment b { font-weight: 500; color: var(--ink-2); margin-right: 6px; }
+.diary-comment-add {
+  margin-top: 6px; font-size: 10.5px; color: var(--muted);
+  cursor: pointer; letter-spacing: 0.06em;
+}

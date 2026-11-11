@@ -21,6 +21,8 @@ export default function Diary({ me, avatars = {}, showAvatars = true, onGo }) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [reply, setReply] = useState('');
+  const [replyFor, setReplyFor] = useState(null);
 
   const today = dayKey();
 
@@ -51,6 +53,23 @@ export default function Diary({ me, avatars = {}, showAvatars = true, onGo }) {
       const r = await diaryApi.write({ text: t, date: selected });
       setData(r);
       setText('');
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function comment(id) {
+    const t = reply.trim();
+    if (!t || busy) return;
+    setBusy(true);
+    setErr('');
+    try {
+      const r = await diaryApi.comment(id, t);
+      setData(r);
+      setReply('');
+      setReplyFor(null);
     } catch (e) {
       setErr(e.message);
     } finally {
@@ -155,6 +174,33 @@ export default function Diary({ me, avatars = {}, showAvatars = true, onGo }) {
               <span onClick={() => like(e.id)} style={{ cursor: 'pointer' }}>
                 {e.likes?.includes('me') ? '♥' : '♡'} {e.likes?.length || 0}
               </span>
+            {(e.comments || []).length > 0 && (
+              <div className="diary-comments">
+                {e.comments.map((c, i) => (
+                  <div key={i} className="diary-comment">
+                    <b>{c.who === 'me' ? me : 'Elliott'}</b>
+                    <span>{c.text}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {replyFor === e.id ? (
+              <div className="fact-add" style={{ marginTop: 6 }}>
+                <input
+                  value={reply}
+                  placeholder="留一句"
+                  onChange={(ev) => setReply(ev.target.value)}
+                  onKeyDown={(ev) => ev.key === 'Enter' && comment(e.id)}
+                />
+                <button onClick={() => comment(e.id)} disabled={busy || !reply.trim()}>
+                  保存
+                </button>
+              </div>
+            ) : (
+              <div className="diary-comment-add" onClick={() => { setReplyFor(e.id); setReply(''); }}>
+                留言
+              </div>
+            )}
             </div>
           </div>
         ))}
@@ -167,7 +213,7 @@ export default function Diary({ me, avatars = {}, showAvatars = true, onGo }) {
             onKeyDown={(e) => e.key === 'Enter' && write()}
           />
           <button onClick={write} disabled={busy || !text.trim()}>
-            {busy ? '…' : '写'}
+            {busy ? '…' : '保存'}
           </button>
         </div>
         {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
