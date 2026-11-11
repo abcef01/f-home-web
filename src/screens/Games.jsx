@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { fishingApi, monoApi, farmApi, burgerApi, pondApi, oracleApi, api } from '../api.js';
 
 const GAMES = [
   ['◯', '五子棋', '7 局 4 胜'],
@@ -113,55 +112,6 @@ function MonoPanel() {
 
 
 
-
-/* 命运牌阵：抽一个场景，故事由他讲 */
-function OraclePanel() {
-  const [spread, setSpread] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const [nsfw, setNsfw] = useState(false);
-  const [err, setErr] = useState('');
-
-  useEffect(() => {
-    oracleApi.get().then((r) => setSpread(r.spread)).catch((e) => setErr(e.message));
-  }, []);
-
-  async function draw() {
-    if (busy) return;
-    setBusy(true);
-    setErr('');
-    try {
-      const r = await oracleApi.draw(nsfw);
-      setSpread(r.spread);
-    } catch (e) {
-      setErr(e.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function tell() {
-    if (!spread) return;
-    await api.chat({ message: '（抽了个牌阵，你来讲讲这个场景吧）' }).catch(() => {});
-  }
-
-  return (
-    <div className="fish-panel">
-      <div className="fish-status">时空 × 母题 × 身份 × 变数</div>
-      <div className="fish-out">{spread?.text || '还没抽。'}</div>
-
-      <div className="fish-actions">
-        <button onClick={draw} disabled={busy}>抽一次</button>
-        <button className={nsfw ? 'on' : ''} onClick={() => setNsfw((v) => !v)}>包含 18+</button>
-        <button onClick={tell} disabled={!spread?.cards?.length}>让他讲</button>
-      </div>
-
-      <div className="hint-line">
-        抽出来的是设定，不是故事。点「让他讲」，他会按这个场景往下演。
-      </div>
-      {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
-    </div>
-  );
-}
 
 /* 瓶中生态 */
 function PondPanel() {
@@ -403,7 +353,6 @@ export default function Games({ onGo }) {
   const [farmOpen, setFarmOpen] = useState(false);
   const [burgerOpen, setBurgerOpen] = useState(false);
   const [pondOpen, setPondOpen] = useState(false);
-  const [oracleOpen, setOracleOpen] = useState(false);
 
   /* 把渔获丢进聊天，让它接一句 */
   async function tell(out) {
@@ -426,11 +375,9 @@ export default function Games({ onGo }) {
       </div>
 
       <div className="game-grid">
-        <div className={'game-card' + (oracleOpen ? ' open' : '')} onClick={() => setOracleOpen((v) => !v)}>
           <span className="g-ico">🎴</span>
           <div>
             <div className="g-name">命运牌阵</div>
-            <div className="g-meta">{oracleOpen ? '收起' : '抽一个场景'}</div>
           </div>
         </div>
 
@@ -485,7 +432,6 @@ export default function Games({ onGo }) {
         ))}
       </div>
 
-      {oracleOpen && <OraclePanel />}
       {pondOpen && <PondPanel />}
       {burgerOpen && <BurgerPanel />}
       {farmOpen && <FarmPanel />}
