@@ -17,6 +17,7 @@ function MonoPanel() {
   const [busy, setBusy] = useState(false);
   const [level, setLevel] = useState(3);
   const [red, setRed] = useState(['后庭']);
+  const [safe, setSafe] = useState('停一下');
   const [err, setErr] = useState('');
 
   const KINKS = ['后庭', '打', '绑', '玩具', '暴露', '羞辱', '失禁', '足', '口水', '产乳', '电', '双龙', '催眠', '蜡', '口', '夹'];
@@ -33,6 +34,11 @@ function MonoPanel() {
       const r = await monoApi.cmd(line);
       setOut(r.output);
       setGame(r.game);
+      /* 抽到任务就转给他，让他自己念、自己接 */
+      const pend = r.game?.pending;
+      if (pend && pend.text && pend.kind !== 'buyTerritory') {
+        api.chat({ message: '（大富翁抽到任务了：' + pend.text + '）' }).catch(() => {});
+      }
     } catch (e) {
       setErr(e.message);
     } finally {
@@ -43,7 +49,7 @@ function MonoPanel() {
   async function start() {
     setBusy(true);
     try {
-      const r = await monoApi.start(level, red);
+      const r = await monoApi.start(level, red, safe);
       setGame(r.game);
       setOut(r.output);
     } catch (e) {
@@ -70,6 +76,10 @@ function MonoPanel() {
               {k}
             </button>
           ))}
+        <div className="param-label">安全词（说出口立刻停）</div>
+        <div className="fact-add">
+          <input value={safe} onChange={(e) => setSafe(e.target.value)} placeholder="停一下" />
+        </div>
         </div>
         <button className="fish-tell" onClick={start} disabled={busy}>开局</button>
         <div className="hint-line">后庭默认关。任何输入「404」立刻全停。</div>
@@ -90,6 +100,10 @@ function MonoPanel() {
         <button onClick={() => run('buy')} disabled={busy}>买卡 3币</button>
         <button onClick={() => run('end')} disabled={busy}>结算</button>
         <button onClick={() => run('404')} className="stop">404</button>
+      <div className="fact-add" style={{ marginTop: 6 }}>
+        <input defaultValue={game.safeword || ''} placeholder="安全词" /* safeEditShown */
+          onBlur={(e) => { const w = e.target.value.trim(); if (w && w !== game.safeword) run('safeword ' + w); }} />
+      </div>
       </div>
       {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
     </div>

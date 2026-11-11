@@ -199,7 +199,8 @@ export const farmApi = {
 
 export const monoApi = {
   state: () => request('/api/mono'),
-  start: (level, redLines) => request('/api/mono/new', { method: 'POST', body: JSON.stringify({ level, redLines }) }),
+  start: (level, redLines, safeword) =>
+    request('/api/mono/new', { method: 'POST', body: JSON.stringify({ level, redLines, safeword }) }),
   cmd: (line) => request('/api/mono/cmd', { method: 'POST', body: JSON.stringify({ line }) })
 };
 
