@@ -15,6 +15,7 @@ import InstallHint from './components/InstallHint.jsx';
 import { authApi, uiSettings, avatarsApi, drivesApi } from './api.js';
 import { startDeviceReporting } from './lib/device.js';
 import { takeSharedImage } from './lib/share.js';
+import { startLocationSync } from './lib/place.js';
 
 const DEFAULTS = {
   theme: 'cream',
@@ -91,6 +92,12 @@ export default function App() {
     return () => {
       alive = false;
     };
+  }, [authState]);
+
+  /* 位置：进 App 时静默更新一次，之后每 30 分钟 */
+  useEffect(() => {
+    if (authState !== 'ok') return;
+    return startLocationSync();
   }, [authState]);
 
   /* 情绪皮肤：界面随它此刻的状态轻轻变一点 */

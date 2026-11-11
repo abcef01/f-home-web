@@ -1,5 +1,8 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
-import { api, stickersApi, watchApi, heartbeatApi } from '../api.js';
+import { api, stickersApi, watchApi, heartbeatApi, pillApi } from '../api.js';
+import { speak, stopSpeak, listenSupported, speechSupported } from '../lib/speech.js';
+import { analyzeSong } from '../lib/audio-notes.js';
+import { refreshLocation } from '../lib/place.js';
 import AvatarImg from '../components/AvatarImg.jsx';
 
 const NAME = 'Elliott';
