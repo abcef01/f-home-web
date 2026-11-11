@@ -2819,3 +2819,7 @@ body::before {
   font-family: var(--font-ui); font-size: 11px;
 }
 .game-card.open { border-color: var(--ink-3); }
+
+/* 大富翁 */
+.fish-actions button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.fish-actions button.stop { background: #b4553f; color: #fff; border-color: #b4553f; }

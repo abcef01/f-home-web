@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { fishingApi, api } from '../api.js';
+import { fishingApi, monoApi, api } from '../api.js';
 
 const GAMES = [
   ['◯', '五子棋', '7 局 4 胜'],
@@ -8,6 +8,93 @@ const GAMES = [
   ['✎', '你画我猜', '还没玩过'],
   ['♡', '真心话大冒险', '今晚要不要来一局']
 ];
+
+
+/* 涩涩大富翁：引擎在后端，红线在引擎里过滤 */
+function MonoPanel() {
+  const [game, setGame] = useState(null);
+  const [out, setOut] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [level, setLevel] = useState(3);
+  const [red, setRed] = useState(['后庭']);
+  const [err, setErr] = useState('');
+
+  const KINKS = ['后庭', '打', '绑', '玩具', '暴露', '羞辱', '失禁', '足', '口水', '产乳', '电', '双龙', '催眠', '蜡', '口', '夹'];
+
+  useEffect(() => {
+    monoApi.state().then((r) => r.game && setGame(r.game)).catch((e) => setErr(e.message));
+  }, []);
+
+  async function run(line) {
+    if (busy) return;
+    setBusy(true);
+    setErr('');
+    try {
+      const r = await monoApi.cmd(line);
+      setOut(r.output);
+      setGame(r.game);
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function start() {
+    setBusy(true);
+    try {
+      const r = await monoApi.start(level, red);
+      setGame(r.game);
+      setOut(r.output);
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!game) {
+    return (
+      <div className="fish-panel">
+        <div className="fish-status">还没开局</div>
+        <div className="param-label">强度 <span className="param-val">{level}</span>（1 只看不做 · 6 失控层）</div>
+        <input className="range" type="range" min="1" max="6" step="1" value={level} onChange={(e) => setLevel(Number(e.target.value))} />
+        <div className="param-label">红线（这些一律不会出现）</div>
+        <div className="fish-actions">
+          {KINKS.map((k) => (
+            <button
+              key={k}
+              className={red.includes(k) ? 'on' : ''}
+              onClick={() => setRed((r) => (r.includes(k) ? r.filter((x) => x !== k) : [...r, k]))}
+            >
+              {k}
+            </button>
+          ))}
+        </div>
+        <button className="fish-tell" onClick={start} disabled={busy}>开局</button>
+        <div className="hint-line">后庭默认关。任何输入「404」立刻全停。</div>
+        {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="fish-panel">
+      <div className="fish-status">{game.status.split('\n')[0]}　强度 {game.level}</div>
+      <div className="fish-out">{out || game.status}</div>
+      <div className="fish-actions">
+        <button onClick={() => run('roll')} disabled={busy}>掷骰</button>
+        <button onClick={() => run('done')} disabled={busy}>做了</button>
+        <button onClick={() => run('skip')} disabled={busy}>跳过</button>
+        <button onClick={() => run('cards')} disabled={busy}>手牌</button>
+        <button onClick={() => run('buy')} disabled={busy}>买卡 3币</button>
+        <button onClick={() => run('end')} disabled={busy}>结算</button>
+        <button onClick={() => run('404')} className="stop">404</button>
+      </div>
+      {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
+    </div>
+  );
+}
 
 /* 钓鱼：引擎在后端，这里是看得见的水面 */
 function FishingPanel({ onTell }) {
@@ -98,6 +185,7 @@ function FishingPanel({ onTell }) {
 
 export default function Games({ onGo }) {
   const [fishOpen, setFishOpen] = useState(false);
+  const [monoOpen, setMonoOpen] = useState(false);
 
   /* 把渔获丢进聊天，让它接一句 */
   async function tell(out) {
@@ -120,6 +208,14 @@ export default function Games({ onGo }) {
       </div>
 
       <div className="game-grid">
+        <div className={'game-card' + (monoOpen ? ' open' : '')} onClick={() => setMonoOpen((v) => !v)}>
+          <span className="g-ico">🎲</span>
+          <div>
+            <div className="g-name">涩涩大富翁</div>
+            <div className="g-meta">{monoOpen ? '收起' : '20 格 · 12 轮 · 18+'}</div>
+          </div>
+        </div>
+
         <div className={'game-card' + (fishOpen ? ' open' : '')} onClick={() => setFishOpen((v) => !v)}>
           <span className="g-ico">🎣</span>
           <div>
@@ -139,6 +235,7 @@ export default function Games({ onGo }) {
         ))}
       </div>
 
+      {monoOpen && <MonoPanel />}
       {fishOpen && <FishingPanel onTell={tell} />}
 
       <div className="section-label">4399</div>
