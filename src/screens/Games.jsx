@@ -1,3 +1,4 @@
+﻿import { fishingApi, monoApi, farmApi, burgerApi, pondApi, api } from '../api.js';
 import React, { useEffect, useRef, useState } from 'react';
 
 const GAMES = [
@@ -375,11 +376,6 @@ export default function Games({ onGo }) {
       </div>
 
       <div className="game-grid">
-          <span className="g-ico">🎴</span>
-          <div>
-            <div className="g-name">命运牌阵</div>
-          </div>
-        </div>
 
         <div className={'game-card' + (pondOpen ? ' open' : '')} onClick={() => setPondOpen((v) => !v)}>
           <span className="g-ico">🫙</span>
