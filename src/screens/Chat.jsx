@@ -7,6 +7,23 @@ import { listenAmbience } from '../lib/ambience.js';
 import AvatarImg from '../components/AvatarImg.jsx';
 
 const NAME = 'Elliott';
+const CACHE_KEY = 'bh_chat_cache';
+
+function saveCache(convId, messages) {
+  try {
+    /* 只存渲染需要的字段，别把整个对象塞进 localStorage */
+    const slim = messages.map((m) => ({
+      id: m.id,
+      role: m.role,
+      content: m.content,
+      created_at: m.created_at,
+      meta: m.meta || undefined
+    }));
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ convId, messages: slim, at: Date.now() }));
+  } catch {
+    /* 存不下就算了 */
+  }
+}
 
 function fmtTime(iso) {
   if (!iso) return '';
@@ -48,6 +65,7 @@ function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAll
               </span>
             </div>
           )}
+          {m.meta?.ask && <AskCard type={m.meta.ask} onWatch={() => startWatch()} onCall={onCall} onWhere={() => refreshLocation({ force: true })} onListen={hearAmbience} onPhoto={() => photoRef.current?.click()} />}
           {m.meta?.callRequest && (
             <div className="call-card">
               <span>想给你打个电话</span>
@@ -136,9 +154,26 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
   const listRef = useRef(null);
   const inputRef = useRef(null);
 
-  /* 打开时加载历史 */
+  /* 打开时先渲染本地缓存，再悄悄拉最新（不会先白一下） */
   useEffect(() => {
     let alive = true;
+
+    /* 1. 缓存先上屏 */
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (raw) {
+        const cached = JSON.parse(raw);
+        if (Array.isArray(cached.messages) && cached.messages.length) {
+          setMessages(cached.messages.map((m) => ({ ...m, _cached: true })));
+          if (cached.convId) setConvId(cached.convId);
+          setLoaded(true);
+        }
+      }
+    } catch {
+      /* 缓存坏了就算了 */
+    }
+
+    /* 2. 后台拉真数据，到了再替换 */
     (async () => {
       try {
         const conv = await api.currentConversation();
@@ -146,7 +181,10 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
         if (conv) {
           setConvId(conv.id);
           const history = await api.messages(conv.id);
-          if (alive) setMessages(history);
+          if (alive) {
+            setMessages(history);
+            saveCache(conv.id, history);
+          }
         }
       } catch (e) {
         if (alive) setError(e.message);
@@ -154,10 +192,17 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
         if (alive) setLoaded(true);
       }
     })();
+
     return () => {
       alive = false;
     };
   }, []);
+
+  /* 消息一变就写缓存，下次打开直接有 */
+  useEffect(() => {
+    if (!convId || !messages.length) return;
+    saveCache(convId, messages.slice(-40));
+  }, [messages, convId]);
 
   useEffect(() => {
     stickersApi.list().then(setStickers).catch(() => {});
@@ -814,5 +859,26 @@ function SpeakButton({ text, voice }) {
     >
       {on ? '■' : '▶'}
     </button>
+  );
+}
+
+/* 它想要点什么 */
+const ASK_LABEL = {
+  watch: { text: '想看看你在做什么', btn: '让他看' },
+  call: { text: '想给你打个电话', btn: '接听' },
+  where: { text: '想知道你在哪', btn: '告诉他' },
+  listen: { text: '想听听你那儿的声音', btn: '让他听' },
+  pic: { text: '想让你发张照片', btn: '发照片' }
+};
+
+function AskCard({ type, onWatch, onCall, onWhere, onListen, onPhoto }) {
+  const info = ASK_LABEL[type];
+  if (!info) return null;
+  const action = { watch: onWatch, call: onCall, where: onWhere, listen: onListen, pic: onPhoto }[type];
+  return (
+    <div className="ask-card">
+      <span>{info.text}</span>
+      <button onClick={() => action && action()}>{info.btn}</button>
+    </div>
   );
 }
