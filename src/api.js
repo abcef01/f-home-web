@@ -192,6 +192,11 @@ export const factsApi = {
   remove: (id) => request('/api/facts/' + id, { method: 'DELETE' }).then((r) => r.facts || [])
 };
 
+export const oracleApi = {
+  get: () => request('/api/oracle'),
+  draw: (nsfw) => request('/api/oracle/draw', { method: 'POST', body: JSON.stringify({ nsfw: !!nsfw }) })
+};
+
 export const pondApi = {
   state: () => request('/api/pond'),
   cmd: (line) => request('/api/pond/cmd', { method: 'POST', body: JSON.stringify({ line }) })
