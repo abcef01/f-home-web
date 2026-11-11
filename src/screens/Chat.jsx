@@ -624,19 +624,6 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
           />
         ))}
 
-        {sending && (
-          <div className="msg them">
-            <div className="bubble-stack">
-              <div className="bubble">
-                <span className="dots">
-                  <i />
-                  <i />
-                  <i />
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
 
         {error && (
           <div className="sysline" style={{ color: '#b4553f' }}>

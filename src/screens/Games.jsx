@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { fishingApi, monoApi, api } from '../api.js';
+import { fishingApi, monoApi, farmApi, api } from '../api.js';
 
 const GAMES = [
   ['◯', '五子棋', '7 局 4 胜'],
@@ -96,6 +96,28 @@ function MonoPanel() {
   );
 }
 
+
+/* 小田：他自己种的，你只能看 */
+function FarmPanel() {
+  const [farm, setFarm] = useState(null);
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    farmApi.state().then((r) => setFarm(r.farm)).catch((e) => setErr(e.message));
+  }, []);
+
+  if (err) return <div className="fish-panel"><div className="hint-line">{err}</div></div>;
+  if (!farm) return <div className="fish-panel"><div className="fish-status">读取中…</div></div>;
+
+  return (
+    <div className="fish-panel">
+      <div className="fish-status">🌱 第 {farm.day} 天 · {farm.coins} 币</div>
+      <div className="fish-out">{farm.status}</div>
+      <div className="hint-line">这块地是他自己在种，平时自己浇水收菜——你想看就过来看一眼。</div>
+    </div>
+  );
+}
+
 /* 钓鱼：引擎在后端，这里是看得见的水面 */
 function FishingPanel({ onTell }) {
   const [status, setStatus] = useState('');
@@ -186,6 +208,7 @@ function FishingPanel({ onTell }) {
 export default function Games({ onGo }) {
   const [fishOpen, setFishOpen] = useState(false);
   const [monoOpen, setMonoOpen] = useState(false);
+  const [farmOpen, setFarmOpen] = useState(false);
 
   /* 把渔获丢进聊天，让它接一句 */
   async function tell(out) {
@@ -208,6 +231,14 @@ export default function Games({ onGo }) {
       </div>
 
       <div className="game-grid">
+        <div className={'game-card' + (farmOpen ? ' open' : '')} onClick={() => setFarmOpen((v) => !v)}>
+          <span className="g-ico">🌱</span>
+          <div>
+            <div className="g-name">小田</div>
+            <div className="g-meta">{farmOpen ? '收起' : '他自己在种'}</div>
+          </div>
+        </div>
+
         <div className={'game-card' + (monoOpen ? ' open' : '')} onClick={() => setMonoOpen((v) => !v)}>
           <span className="g-ico">🎲</span>
           <div>
@@ -235,6 +266,7 @@ export default function Games({ onGo }) {
         ))}
       </div>
 
+      {farmOpen && <FarmPanel />}
       {monoOpen && <MonoPanel />}
       {fishOpen && <FishingPanel onTell={tell} />}
 

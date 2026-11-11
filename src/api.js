@@ -192,6 +192,11 @@ export const factsApi = {
   remove: (id) => request('/api/facts/' + id, { method: 'DELETE' }).then((r) => r.facts || [])
 };
 
+export const farmApi = {
+  state: () => request('/api/farm'),
+  cmd: (line) => request('/api/farm/cmd', { method: 'POST', body: JSON.stringify({ line }) })
+};
+
 export const monoApi = {
   state: () => request('/api/mono'),
   start: (level, redLines) => request('/api/mono/new', { method: 'POST', body: JSON.stringify({ level, redLines }) }),
