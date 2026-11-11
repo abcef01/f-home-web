@@ -436,6 +436,13 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
       setAmbienting(false);
     }
   }
+  /* 首页「一起听」进来时，直接打开选歌（跟聊天里点 ♪ 一样） */
+  useEffect(() => {
+    const open = () => musicRef.current?.click();
+    window.addEventListener('bunny-open-song', open);
+    return () => window.removeEventListener('bunny-open-song', open);
+  }, []);
+
   /* 发一首歌：本地分析结构，再把结果发给它 */
   async function sendSong(file) {
     if (!file || sending) return;

@@ -11,7 +11,6 @@ import Album from './screens/Album.jsx';
 import Mail from './screens/Mail.jsx';
 import Games from './screens/Games.jsx';
 import Reader from './screens/Reader.jsx';
-import Listen from './screens/Listen.jsx';
 import Slots from './screens/Slots.jsx';
 import Lock from './components/Lock.jsx';
 import InstallHint from './components/InstallHint.jsx';
@@ -71,7 +70,7 @@ export default function App() {
       alive = false;
     };
   }, []);
-  const KNOWN = ['object', 'home', 'chat', 'read', 'listen', 'slots', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games', 'call'];
+  const KNOWN = ['object', 'home', 'chat', 'read', 'slots', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games', 'call'];
   const [screen, setScreen] = useState(() => {
     const h = (window.location.hash || '').replace('#', '');
     return KNOWN.includes(h) && h !== 'object' ? h : 'opening';

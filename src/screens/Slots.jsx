@@ -70,15 +70,18 @@ export default function Slots({ onGo }) {
         setReels(final.map((f) => f.tag));
         setSpinning(false);
         setResult(final);
+        /* 转完就直接告诉他，不需要你再点 */
+        tell(final);
       }
     }, 70);
   }
 
   useEffect(() => () => timerRef.current && clearInterval(timerRef.current), []);
 
-  async function tell() {
-    if (!result) return;
-    const text = result.map((r) => `${r.dim.zh}：${r.tag.zh}`).join('\n');
+  async function tell(res) {
+    const list = res || result;
+    if (!list) return;
+    const text = list.map((r) => `${r.dim.zh}：${r.tag.zh}`).join('\n');
     try {
       const r = await api.chat({ message: `（刚转了一把老虎机，转到的结果是：\n${text}\n）` });
       setSent((r.replies || []).map((x) => x.content).join('\n'));
@@ -135,9 +138,6 @@ export default function Slots({ onGo }) {
                 <b>{r.tag.zh}</b>
               </div>
             ))}
-            <button className="fish-tell" onClick={tell}>
-              发给他
-            </button>
           </div>
         )}
 

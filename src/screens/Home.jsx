@@ -3,7 +3,7 @@ import { daysSince, fmtSince } from '../lib/days.js';
 
 const QUICK = [
   { id: 'watch', label: '一起看', go: null },
-  { id: 'listen', label: '一起听', go: 'listen' },
+  { id: 'listen', label: '一起听', go: 'chat', signal: 'bunny-open-song' },
   { id: 'read', label: '书架', go: 'read' },
   { id: 'mail', label: '信箱', go: 'mail' },
   { id: 'album', label: '相册', go: 'album' },
@@ -66,6 +66,7 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo }) 
             key={q.id}
             onClick={() => {
               if (q.go) onGo(q.go);
+              if (q.signal) setTimeout(() => window.dispatchEvent(new Event(q.signal)), 260);
             }}
           >
             <CellIcon id={q.id} />
