@@ -2823,3 +2823,9 @@ body::before {
 /* 大富翁 */
 .fish-actions button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .fish-actions button.stop { background: #b4553f; color: #fff; border-color: #b4553f; }
+
+/* 共同手帐 */
+.cal-cell.sel { outline: 1px solid var(--ink-3); }
+.diary-day { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.diary-day-head { font-size: 11px; letter-spacing: 0.1em; color: var(--muted); }
+.duo-card.ta { background: rgba(0, 0, 0, 0.015); }

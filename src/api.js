@@ -192,6 +192,13 @@ export const factsApi = {
   remove: (id) => request('/api/facts/' + id, { method: 'DELETE' }).then((r) => r.facts || [])
 };
 
+export const diaryApi = {
+  month: (month) => request('/api/diary' + (month ? '?month=' + month : '')),
+  write: (payload) => request('/api/diary/entry', { method: 'POST', body: JSON.stringify(payload) }),
+  like: (id) => request('/api/diary/like', { method: 'POST', body: JSON.stringify({ id }) }),
+  autowrite: () => request('/api/diary/autowrite', { method: 'POST', body: '{}' })
+};
+
 export const questsApi = {
   list: () => request('/api/quests'),
   create: (title, points) => request('/api/quests/create', { method: 'POST', body: JSON.stringify({ title, points }) }),
