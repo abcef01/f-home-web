@@ -167,13 +167,15 @@ function FishingPanel({ onTell }) {
         <button onClick={() => run('inventory')} disabled={busy}>渔篓</button>
         <button onClick={() => run('enc')} disabled={busy}>图鉴</button>
         <button onClick={() => run('shop')} disabled={busy}>商店</button>
+        <button onClick={() => run('dive 3')} disabled={busy}>潜水×3</button>
+        <button onClick={() => run('buy oxygen 5')} disabled={busy}>买氧气5</button>
         <button onClick={() => run('sell all')} disabled={busy}>卖光</button>
       </div>
 
       <div className="fish-input">
         <input
           value={line}
-          placeholder="也可以打指令：goto reed_river / buy glow_bait 3 / look 银梭鱼"
+          placeholder="指令：goto reed_river / dive 5 / choose 1 / surface / look 银梭鱼"
           onChange={(e) => setLine(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && line.trim()) {
