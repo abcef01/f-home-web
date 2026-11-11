@@ -192,6 +192,11 @@ export const factsApi = {
   remove: (id) => request('/api/facts/' + id, { method: 'DELETE' }).then((r) => r.facts || [])
 };
 
+export const pondApi = {
+  state: () => request('/api/pond'),
+  cmd: (line) => request('/api/pond/cmd', { method: 'POST', body: JSON.stringify({ line }) })
+};
+
 export const burgerApi = {
   state: () => request('/api/burger'),
   cmd: (line) => request('/api/burger/cmd', { method: 'POST', body: JSON.stringify({ line }) })

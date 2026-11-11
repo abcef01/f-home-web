@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { fishingApi, monoApi, farmApi, burgerApi, api } from '../api.js';
+import { fishingApi, monoApi, farmApi, burgerApi, pondApi, api } from '../api.js';
 
 const GAMES = [
   ['◯', '五子棋', '7 局 4 胜'],
@@ -111,6 +111,57 @@ function MonoPanel() {
 }
 
 
+
+
+/* 瓶中生态 */
+function PondPanel() {
+  const [pond, setPond] = useState(null);
+  const [out, setOut] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    pondApi.state().then((r) => setPond(r.pond)).catch((e) => setErr(e.message));
+  }, []);
+
+  async function run(cmd) {
+    if (busy) return;
+    setBusy(true);
+    setErr('');
+    try {
+      const r = await pondApi.cmd(cmd);
+      setOut(r.output);
+      setPond(r.pond);
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="fish-panel">
+      <div className="fish-status">{pond ? pond.status.split('\n')[0] : '读取中…'}</div>
+      <div className="fish-out">{out || (pond ? pond.status : '')}</div>
+
+      <div className="fish-actions">
+        <button onClick={() => run('wait 3')} disabled={busy}>过三天</button>
+        <button onClick={() => run('add 藻 5')} disabled={busy}>放藻</button>
+        <button onClick={() => run('add weed 2')} disabled={busy}>放水草</button>
+        <button onClick={() => run('add daphnia 3')} disabled={busy}>放水蚤</button>
+        <button onClick={() => run('add minnow 2')} disabled={busy}>放鱼</button>
+        <button onClick={() => run('skim')} disabled={busy}>捞藻</button>
+        <button onClick={() => run('water')} disabled={busy}>换水</button>
+        <button onClick={() => run('status')} disabled={busy}>看池子</button>
+      </div>
+
+      <div className="hint-line">
+        没有分数。放进去的东西会自己长、自己吃、自己死——水会臭，鱼会浮上来。
+      </div>
+      {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
+    </div>
+  );
+}
 
 /* 中午的汉堡店 */
 function BurgerPanel() {
@@ -301,6 +352,7 @@ export default function Games({ onGo }) {
   const [monoOpen, setMonoOpen] = useState(false);
   const [farmOpen, setFarmOpen] = useState(false);
   const [burgerOpen, setBurgerOpen] = useState(false);
+  const [pondOpen, setPondOpen] = useState(false);
 
   /* 把渔获丢进聊天，让它接一句 */
   async function tell(out) {
@@ -323,6 +375,14 @@ export default function Games({ onGo }) {
       </div>
 
       <div className="game-grid">
+        <div className={'game-card' + (pondOpen ? ' open' : '')} onClick={() => setPondOpen((v) => !v)}>
+          <span className="g-ico">🫙</span>
+          <div>
+            <div className="g-name">瓶中生态</div>
+            <div className="g-meta">{pondOpen ? '收起' : '一池清水'}</div>
+          </div>
+        </div>
+
         <div className={'game-card' + (burgerOpen ? ' open' : '')} onClick={() => setBurgerOpen((v) => !v)}>
           <span className="g-ico">🍔</span>
           <div>
@@ -366,6 +426,7 @@ export default function Games({ onGo }) {
         ))}
       </div>
 
+      {pondOpen && <PondPanel />}
       {burgerOpen && <BurgerPanel />}
       {farmOpen && <FarmPanel />}
       {monoOpen && <MonoPanel />}
