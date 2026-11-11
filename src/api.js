@@ -199,6 +199,11 @@ export const ritualsApi = {
   check: (id) => request('/api/rituals/check', { method: 'POST', body: JSON.stringify({ id }) })
 };
 
+export const sleepApi = {
+  list: () => request('/api/sleep'),
+  save: (payload) => request('/api/sleep', { method: 'POST', body: JSON.stringify(payload) })
+};
+
 export const backupApi = {
   exportUrl: () => '/api/backup/export',
   import: (payload, mode) => request('/api/backup/import', { method: 'POST', body: JSON.stringify({ payload, mode }) })
