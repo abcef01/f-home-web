@@ -70,7 +70,7 @@ export default function App() {
       alive = false;
     };
   }, []);
-  const KNOWN = ['object', 'home', 'chat', 'read', 'slots', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games', 'call'];
+  const KNOWN = ['object', 'home', 'chat', 'read', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games', 'call'];
   const [screen, setScreen] = useState(() => {
     const h = (window.location.hash || '').replace('#', '');
     return KNOWN.includes(h) && h !== 'object' ? h : 'opening';

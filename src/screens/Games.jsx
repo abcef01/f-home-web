@@ -1,4 +1,5 @@
 ﻿import { fishingApi, monoApi, farmApi, burgerApi, pondApi, api } from '../api.js';
+import Slots from './Slots.jsx';
 import React, { useEffect, useRef, useState } from 'react';
 
 const GAMES = [
@@ -379,11 +380,11 @@ export default function Games({ onGo }) {
       <div className="game-grid">
 
 
-        <div className="game-card" onClick={() => onGo && onGo('slots')}>
+        <div className={'game-card' + (slotOpen ? ' open' : '')} onClick={() => setSlotOpen((v) => !v)}>
           <span className="g-ico">🎰</span>
           <div>
             <div className="g-name">老虎机</div>
-            <div className="g-meta">转到什么就是什么</div>
+            <div className="g-meta">{slotOpen ? '收起' : '转到什么就是什么'}</div>
           </div>
         </div>
 
@@ -438,6 +439,7 @@ export default function Games({ onGo }) {
         ))}
       </div>
 
+      {slotOpen && <Slots />}
       {pondOpen && <PondPanel />}
       {burgerOpen && <BurgerPanel />}
       {farmOpen && <FarmPanel />}
