@@ -194,6 +194,11 @@ export const factsApi = {
   remove: (id) => request('/api/facts/' + id, { method: 'DELETE' }).then((r) => r.facts || [])
 };
 
+export const ritualsApi = {
+  list: () => request('/api/rituals'),
+  check: (id) => request('/api/rituals/check', { method: 'POST', body: JSON.stringify({ id }) })
+};
+
 export const backupApi = {
   exportUrl: () => '/api/backup/export',
   import: (payload, mode) => request('/api/backup/import', { method: 'POST', body: JSON.stringify({ payload, mode }) })
