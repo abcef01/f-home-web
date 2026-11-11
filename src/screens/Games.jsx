@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { fishingApi, monoApi, farmApi, api } from '../api.js';
+import { fishingApi, monoApi, farmApi, burgerApi, api } from '../api.js';
 
 const GAMES = [
   ['◯', '五子棋', '7 局 4 胜'],
@@ -110,6 +110,81 @@ function MonoPanel() {
   );
 }
 
+
+
+/* 中午的汉堡店 */
+function BurgerPanel() {
+  const [game, setGame] = useState(null);
+  const [out, setOut] = useState('');
+  const [line, setLine] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    burgerApi.state().then((r) => setGame(r.game)).catch((e) => setErr(e.message));
+  }, []);
+
+  async function run(cmd) {
+    if (busy) return;
+    setBusy(true);
+    setErr('');
+    try {
+      const r = await burgerApi.cmd(cmd);
+      setOut(r.output);
+      setGame(r.game);
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="fish-panel">
+      <div className="fish-status">{game ? game.status.split('\n')[0] : '读取中…'}</div>
+      <div className="fish-out">{out || (game ? game.status : '')}</div>
+
+      <div className="fish-actions">
+        <button onClick={() => run('order')} disabled={busy}>看单</button>
+        <button onClick={() => run('wait')} disabled={busy}>等一回合</button>
+        <button onClick={() => run('serve')} disabled={busy}>出餐</button>
+        <button onClick={() => run('day')} disabled={busy}>收摊</button>
+        <button onClick={() => run('shop')} disabled={busy}>装修</button>
+        <button onClick={() => run('status')} disabled={busy}>状态</button>
+      </div>
+
+      <div className="fish-input">
+        <input
+          value={line}
+          placeholder="grill 牛肉饼 / flip A / take A / build 原味胚 生菜 牛肉饼 原味胚 / sauce 番茄酱 正常"
+          onChange={(e) => setLine(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && line.trim()) {
+              run(line.trim());
+              setLine('');
+            }
+          }}
+        />
+        <button
+          onClick={() => {
+            if (line.trim()) {
+              run(line.trim());
+              setLine('');
+            }
+          }}
+          disabled={busy || !line.trim()}
+        >
+          执行
+        </button>
+      </div>
+
+      <div className="hint-line">
+        自己玩也行：看单 → grill 肉 → 等到正好 → flip 翻面 → take 取 → build 按顺序叠 → sauce 加酱 → serve 出餐。
+      </div>
+      {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
+    </div>
+  );
+}
 
 /* 小田：他自己种的，你只能看 */
 function FarmPanel() {
@@ -225,6 +300,7 @@ export default function Games({ onGo }) {
   const [fishOpen, setFishOpen] = useState(false);
   const [monoOpen, setMonoOpen] = useState(false);
   const [farmOpen, setFarmOpen] = useState(false);
+  const [burgerOpen, setBurgerOpen] = useState(false);
 
   /* 把渔获丢进聊天，让它接一句 */
   async function tell(out) {
@@ -247,6 +323,14 @@ export default function Games({ onGo }) {
       </div>
 
       <div className="game-grid">
+        <div className={'game-card' + (burgerOpen ? ' open' : '')} onClick={() => setBurgerOpen((v) => !v)}>
+          <span className="g-ico">🍔</span>
+          <div>
+            <div className="g-name">汉堡店</div>
+            <div className="g-meta">{burgerOpen ? '收起' : '7 天 · 烤肉与叠层'}</div>
+          </div>
+        </div>
+
         <div className={'game-card' + (farmOpen ? ' open' : '')} onClick={() => setFarmOpen((v) => !v)}>
           <span className="g-ico">🌱</span>
           <div>
@@ -282,6 +366,7 @@ export default function Games({ onGo }) {
         ))}
       </div>
 
+      {burgerOpen && <BurgerPanel />}
       {farmOpen && <FarmPanel />}
       {monoOpen && <MonoPanel />}
       {fishOpen && <FishingPanel onTell={tell} />}
