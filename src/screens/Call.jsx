@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import { callApi } from '../api.js';
 import { speak, stopSpeak, listenStream, listenSupported } from '../lib/speech.js';
+import { createToneMeter } from '../lib/tone.js';
 
 /**
  * 通话界面
@@ -21,6 +22,8 @@ export default function Call({ voice = {}, onClose }) {
   const audioCtxRef = useRef(null);
   const busyRef = useRef(false);
   const phaseRef = useRef('dialing');
+  const meterRef = useRef(null);
+  const micRef = useRef(null);
 
   useEffect(() => {
     phaseRef.current = phase;
@@ -80,10 +83,32 @@ export default function Call({ voice = {}, onClose }) {
   /* 接通：它先开口，然后开始听 */
   useEffect(() => {
     if (phase !== 'talking') return;
+
+    /* 单独开一路麦克风做语气分析（识别那一路拿不到音频） */
+    let cancelled = false;
+    navigator.mediaDevices
+      ?.getUserMedia({ audio: true })
+      .then((stream) => {
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        micRef.current = stream;
+        const meter = createToneMeter();
+        if (meter.start(stream)) meterRef.current = meter;
+      })
+      .catch(() => {});
+
     say('喂？').then(() => startListening());
+
     return () => {
+      cancelled = true;
       recRef.current?.stop();
       recRef.current = null;
+      meterRef.current?.stop();
+      meterRef.current = null;
+      micRef.current?.getTracks().forEach((t) => t.stop());
+      micRef.current = null;
     };
   }, [phase]);
 
@@ -109,8 +134,13 @@ export default function Call({ voice = {}, onClose }) {
         recRef.current = null;
 
         setLines((l) => [...l, { role: 'me', text }]);
+
+        /* 取这一段说话的语气，然后清零重新计 */
+        const tone = meterRef.current?.read() || null;
+        meterRef.current?.reset();
+
         try {
-          const r = await callApi.turn(text);
+          const r = await callApi.turn(text, false, tone);
           if (r.reply) {
             setLines((l) => [...l, { role: 'ta', text: r.reply }]);
             speak(r.reply, { rate: voice.rate || 1, voiceName: voice.name || '' });
