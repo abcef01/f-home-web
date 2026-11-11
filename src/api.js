@@ -197,6 +197,7 @@ export const diaryApi = {
   write: (payload) => request('/api/diary/entry', { method: 'POST', body: JSON.stringify(payload) }),
   like: (id) => request('/api/diary/like', { method: 'POST', body: JSON.stringify({ id }) }),
   comment: (id, text) => request('/api/diary/comment', { method: 'POST', body: JSON.stringify({ id, text }) }),
+  note: (text) => request('/api/diary/note', { method: 'POST', body: JSON.stringify({ text }) }),
   autowrite: () => request('/api/diary/autowrite', { method: 'POST', body: '{}' })
 };
 

@@ -2839,3 +2839,17 @@ body::before {
   margin-top: 6px; font-size: 10.5px; color: var(--muted);
   cursor: pointer; letter-spacing: 0.06em;
 }
+
+
+/* 纸条墙 */
+.notes-wall { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.note-card {
+  flex: 1 1 44%; min-width: 140px;
+  padding: 12px 13px; border-radius: 2px;
+  background: rgba(246, 236, 208, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transform: rotate(-0.4deg);
+}
+.note-card.ta { background: rgba(232, 238, 226, 0.6); transform: rotate(0.5deg); }
+.note-text { font-size: 12.5px; line-height: 1.9; color: var(--ink); }
+.note-meta { margin-top: 8px; font-size: 10px; color: var(--muted); letter-spacing: 0.04em; }

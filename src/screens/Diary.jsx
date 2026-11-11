@@ -23,6 +23,7 @@ export default function Diary({ me, avatars = {}, showAvatars = true, onGo }) {
   const [err, setErr] = useState('');
   const [reply, setReply] = useState('');
   const [replyFor, setReplyFor] = useState(null);
+  const [noteText, setNoteText] = useState('');
 
   const today = dayKey();
 
@@ -77,6 +78,22 @@ export default function Diary({ me, avatars = {}, showAvatars = true, onGo }) {
     }
   }
 
+  async function postNote() {
+    const t = noteText.trim();
+    if (!t || busy) return;
+    setBusy(true);
+    setErr('');
+    try {
+      const r = await diaryApi.note(t);
+      setData(r);
+      setNoteText('');
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function like(id) {
     try {
       const r = await diaryApi.like(id);
@@ -102,6 +119,7 @@ export default function Diary({ me, avatars = {}, showAvatars = true, onGo }) {
       <div className="chips-row">
         {[
           ['month', '月'],
+          ['notes', '纸条'],
           ['all', '全部']
         ].map(([id, label]) => (
           <span key={id} className={'chip' + (view === id ? ' on' : '')} onClick={() => setView(id)}>
@@ -143,6 +161,20 @@ export default function Diary({ me, avatars = {}, showAvatars = true, onGo }) {
         </div>
       )}
 
+      {view === 'notes' && (
+        <div className="notes-wall">
+          {(data.notes || []).length === 0 && <div className="hint-line">墙上还是空的。写一条吧。</div>}
+          {[...(data.notes || [])].reverse().map((n) => (
+            <div className={"note-card " + (n.who === 'me' ? 'me' : 'ta')} key={n.id}>
+              <div className="note-text">{n.text}</div>
+              <div className="note-meta">
+                {n.who === 'me' ? me : 'Elliott'} · {new Date(n.at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {view === 'all' && (
         <div className="fish-out" style={{ maxHeight: 320 }}>
           {data.entries?.length
@@ -154,6 +186,22 @@ export default function Diary({ me, avatars = {}, showAvatars = true, onGo }) {
             : '这个月还是空白的。'}
         </div>
       )}
+
+      {view === 'notes' && (
+        <div className="fact-add" style={{ marginTop: 12 }}>
+          <input
+            value={noteText}
+            placeholder="碎碎念，一两句就好"
+            onChange={(e) => setNoteText(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && postNote()}
+          />
+          <button onClick={postNote} disabled={busy || !noteText.trim()}>
+            {busy ? '…' : '贴上去'}
+          </button>
+        </div>
+      )}
+      {view !== 'notes' && (
+      <>
 
       <div className="diary-day">
         <div className="diary-day-head">{selected === today ? '今天' : selected}</div>
@@ -218,6 +266,8 @@ export default function Diary({ me, avatars = {}, showAvatars = true, onGo }) {
         </div>
         {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
       </div>
+      </>
+      )}
 
       <div style={{ height: 24 }} />
     </>
