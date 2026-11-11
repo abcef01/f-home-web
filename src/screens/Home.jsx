@@ -3,7 +3,7 @@ import { daysSince, fmtSince } from '../lib/days.js';
 
 const QUICK = [
   { id: 'watch', label: '一起看', go: null },
-  { id: 'listen', label: '一起听', go: null },
+  { id: 'listen', label: '一起听', go: 'listen' },
   { id: 'read', label: '书架', go: 'read' },
   { id: 'mail', label: '信箱', go: 'mail' },
   { id: 'album', label: '相册', go: 'album' },

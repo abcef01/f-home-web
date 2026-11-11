@@ -379,6 +379,14 @@ export default function Games({ onGo }) {
       <div className="game-grid">
 
 
+        <div className="game-card" onClick={() => onGo && onGo('slots')}>
+          <span className="g-ico">🎰</span>
+          <div>
+            <div className="g-name">老虎机</div>
+            <div className="g-meta">转到什么就是什么</div>
+          </div>
+        </div>
+
         <div className={'game-card' + (pondOpen ? ' open' : '')} onClick={() => setPondOpen((v) => !v)}>
           <span className="g-ico">🫙</span>
           <div>

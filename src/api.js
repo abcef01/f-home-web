@@ -83,6 +83,7 @@ export const api = {
 
   conversations: () => request('/api/conversations').then((r) => r.conversations),
   currentConversation: () => request('/api/conversation').then((r) => r.conversation),
+  slotsTags: () => request('/api/slots/tags?all=1'),
   device: (status) => deviceApi.report(status),
   messages: (conversationId) =>
     request('/api/conversations/' + conversationId + '/messages').then((r) => r.messages),
@@ -190,6 +191,10 @@ export const factsApi = {
   list: () => request('/api/facts').then((r) => r.facts || []),
   add: (text) => request('/api/facts', { method: 'POST', body: JSON.stringify({ text }) }).then((r) => r.facts || []),
   remove: (id) => request('/api/facts/' + id, { method: 'DELETE' }).then((r) => r.facts || [])
+};
+
+export const slotsApi = {
+  tags: () => request('/api/slots/tags?all=1')
 };
 
 export const booksApi = {
