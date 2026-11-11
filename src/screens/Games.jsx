@@ -1,4 +1,4 @@
-﻿import { fishingApi, monoApi, farmApi, burgerApi, pondApi, api } from '../api.js';
+﻿import { fishingApi, monoApi, farmApi, burgerApi, pondApi, questsApi, api } from '../api.js';
 import React, { useEffect, useRef, useState } from 'react';
 
 const GAMES = [
@@ -113,6 +113,112 @@ function MonoPanel() {
 
 
 
+
+
+/* 约定：任务 / 积分 / 连击 */
+function QuestPanel() {
+  const [q, setQ] = useState(null);
+  const [title, setTitle] = useState('');
+  const [points, setPoints] = useState(5);
+  const [proof, setProof] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    questsApi.list().then(setQ).catch((e) => setErr(e.message));
+  }, []);
+
+  async function run(fn) {
+    if (busy) return;
+    setBusy(true);
+    setErr('');
+    try {
+      const r = await fn();
+      setQ(r);
+      if (r.approved !== undefined) setMsg(r.approved ? r.comment || '过了' : r.comment || '没通过');
+      else if (r.reward) setMsg('兑换了：' + r.reward.name);
+      else setMsg('');
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!q) return <div className="fish-panel"><div className="fish-status">读取中…</div></div>;
+
+  return (
+    <div className="fish-panel">
+      <div className="fish-status">📒 积分 {q.points}　连击 {q.streak.count} 天（最长 {q.streak.best || 0}）</div>
+
+      <div className="fish-out">
+        {q.open.length === 0 && '手上没有约定。'}
+        {q.open.map((t) => (
+          <div key={t.id} style={{ marginBottom: 10 }}>
+            <div>· {t.title}　{t.points} 分　{t.status === 'submitted' ? '（已交凭证）' : ''}</div>
+            {t.status === 'open' && (
+              <div className="fact-add" style={{ marginTop: 4 }}>
+                <input
+                  placeholder="做到什么程度？写一句"
+                  value={proof[t.id] || ''}
+                  onChange={(e) => setProof((p) => ({ ...p, [t.id]: e.target.value }))}
+                />
+                <button
+                  disabled={busy || !(proof[t.id] || '').trim()}
+                  onClick={() => run(() => questsApi.submit(t.id, proof[t.id]))}
+                >
+                  交凭证
+                </button>
+              </div>
+            )}
+            {t.status === 'submitted' && (
+              <button className="fish-tell" style={{ marginTop: 4 }} disabled={busy} onClick={() => run(() => questsApi.review(t.id))}>
+                让他审
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="fact-add">
+        <input value={title} placeholder="跟他约定一件事，比如：每天喝够水" onChange={(e) => setTitle(e.target.value)} />
+        <input
+          style={{ maxWidth: 70 }}
+          value={points}
+          onChange={(e) => setPoints(Number(e.target.value) || 5)}
+          placeholder="分"
+        />
+        <button
+          disabled={busy || !title.trim()}
+          onClick={() =>
+            run(async () => {
+              const r = await questsApi.create(title.trim(), points);
+              setTitle('');
+              return r;
+            })
+          }
+        >
+          约定
+        </button>
+      </div>
+
+      {q.rewards?.length > 0 && (
+        <div className="fish-actions">
+          {q.rewards.map((r) => (
+            <button key={r.id} disabled={busy || q.points < r.cost} onClick={() => run(() => questsApi.redeem(r.id))}>
+              {r.name} {r.cost}分
+            </button>
+          ))}
+        </div>
+      )}
+
+      {q.achievements?.length > 0 && <div className="hint-line">成就：{q.achievements.join('、')}</div>}
+      {msg && <div className="hint-line">{msg}</div>}
+      {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
+    </div>
+  );
+}
 
 /* 瓶中生态 */
 function PondPanel() {
@@ -354,6 +460,7 @@ export default function Games({ onGo }) {
   const [farmOpen, setFarmOpen] = useState(false);
   const [burgerOpen, setBurgerOpen] = useState(false);
   const [pondOpen, setPondOpen] = useState(false);
+  const [questOpen, setQuestOpen] = useState(false);
 
   /* 把渔获丢进聊天，让它接一句 */
   async function tell(out) {
@@ -376,6 +483,14 @@ export default function Games({ onGo }) {
       </div>
 
       <div className="game-grid">
+
+        <div className={'game-card' + (questOpen ? ' open' : '')} onClick={() => setQuestOpen((v) => !v)}>
+          <span className="g-ico">📒</span>
+          <div>
+            <div className="g-name">约定</div>
+            <div className="g-meta">{questOpen ? '收起' : '任务 · 积分 · 连击'}</div>
+          </div>
+        </div>
 
         <div className={'game-card' + (pondOpen ? ' open' : '')} onClick={() => setPondOpen((v) => !v)}>
           <span className="g-ico">🫙</span>
@@ -428,6 +543,7 @@ export default function Games({ onGo }) {
         ))}
       </div>
 
+      {questOpen && <QuestPanel />}
       {pondOpen && <PondPanel />}
       {burgerOpen && <BurgerPanel />}
       {farmOpen && <FarmPanel />}

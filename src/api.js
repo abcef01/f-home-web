@@ -192,6 +192,14 @@ export const factsApi = {
   remove: (id) => request('/api/facts/' + id, { method: 'DELETE' }).then((r) => r.facts || [])
 };
 
+export const questsApi = {
+  list: () => request('/api/quests'),
+  create: (title, points) => request('/api/quests/create', { method: 'POST', body: JSON.stringify({ title, points }) }),
+  submit: (id, proof) => request('/api/quests/submit', { method: 'POST', body: JSON.stringify({ id, proof }) }),
+  review: (id) => request('/api/quests/review', { method: 'POST', body: JSON.stringify({ id }) }),
+  redeem: (id) => request('/api/quests/redeem', { method: 'POST', body: JSON.stringify({ id }) })
+};
+
 export const pondApi = {
   state: () => request('/api/pond'),
   cmd: (line) => request('/api/pond/cmd', { method: 'POST', body: JSON.stringify({ line }) })
