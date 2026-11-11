@@ -5,6 +5,7 @@ import StickerManager from '../components/StickerManager.jsx';
 import AvatarPicker from '../components/AvatarPicker.jsx';
 import NotifyToggle from '../components/NotifyToggle.jsx';
 import { api, auth } from '../api.js';
+import BackupBox from '../components/BackupBox.jsx';
 import { factsApi, memoryApi, placeApi } from '../api.js';
 import { speak, chineseVoices, onVoicesReady, speechSupported } from '../lib/speech.js';
 

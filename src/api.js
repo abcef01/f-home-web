@@ -84,6 +84,7 @@ export const api = {
   conversations: () => request('/api/conversations').then((r) => r.conversations),
   currentConversation: () => request('/api/conversation').then((r) => r.conversation),
   slotsTags: () => request('/api/slots/tags?all=1'),
+  backupImport: (payload, mode) => request('/api/backup/import', { method: 'POST', body: JSON.stringify({ payload, mode }) }),
   device: (status) => deviceApi.report(status),
   messages: (conversationId) =>
     request('/api/conversations/' + conversationId + '/messages').then((r) => r.messages),
@@ -193,6 +194,11 @@ export const factsApi = {
   remove: (id) => request('/api/facts/' + id, { method: 'DELETE' }).then((r) => r.facts || [])
 };
 
+export const backupApi = {
+  exportUrl: () => '/api/backup/export',
+  import: (payload, mode) => request('/api/backup/import', { method: 'POST', body: JSON.stringify({ payload, mode }) })
+};
+
 export const slotsApi = {
   tags: () => request('/api/slots/tags?all=1')
 };
@@ -218,6 +224,7 @@ export const diaryApi = {
   like: (id) => request('/api/diary/like', { method: 'POST', body: JSON.stringify({ id }) }),
   comment: (id, text) => request('/api/diary/comment', { method: 'POST', body: JSON.stringify({ id, text }) }),
   note: (text) => request('/api/diary/note', { method: 'POST', body: JSON.stringify({ text }) }),
+  importText: (title, text) => request('/api/books/import-text', { method: 'POST', body: JSON.stringify({ title, text }) }),
   autowrite: () => request('/api/diary/autowrite', { method: 'POST', body: '{}' })
 };
 

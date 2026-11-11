@@ -28,6 +28,9 @@ export default function Reader({ onGo }) {
   const [noteOpen, setNoteOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteTitle, setPasteTitle] = useState('');
+  const [pasteText, setPasteText] = useState('');
 
   const viewportRef = useRef(null);
   const contentRef = useRef(null);
@@ -193,6 +196,24 @@ export default function Reader({ onGo }) {
     }
   }
 
+  async function importPasted() {
+    if (!pasteText.trim()) return;
+    setBusy(true);
+    setErr('');
+    try {
+      const res = await booksApi.importText(pasteTitle.trim() || '粘贴的书', pasteText);
+      setBooks(res.books);
+      setPasteOpen(false);
+      setPasteText('');
+      setPasteTitle('');
+      await openBook(res.book.id);
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function remove(id) {
     if (!window.confirm('删掉这本书？')) return;
     await booksApi.remove(id).catch(() => {});
@@ -223,6 +244,9 @@ export default function Reader({ onGo }) {
           <div className="reader-title">书架</div>
           <button className="reader-btn" onClick={() => fileRef.current?.click()} disabled={busy}>
             {busy ? '导入中…' : '导入'}
+          </button>
+          <button className="reader-btn" onClick={() => setPasteOpen(true)}>
+            粘贴
           </button>
           <input
             ref={fileRef}
@@ -257,6 +281,33 @@ export default function Reader({ onGo }) {
             );
           })}
         </div>
+        {pasteOpen && (
+          <div className="reader-sheet">
+            <div className="gl">粘贴正文</div>
+            <input
+              className="reader-title-input"
+              value={pasteTitle}
+              placeholder="书名（可不填）"
+              onChange={(e) => setPasteTitle(e.target.value)}
+            />
+            <textarea
+              className="reader-note"
+              style={{ minHeight: 150 }}
+              value={pasteText}
+              placeholder="把一章正文粘进来。有「第 X 章」这种标题会自动分章。"
+              onChange={(e) => setPasteText(e.target.value)}
+            />
+            <div className="reader-sheet-row">
+              <button className="reader-toggle" onClick={() => { setPasteOpen(false); setPasteText(''); }}>
+                取消
+              </button>
+              <button className="reader-toggle on" onClick={importPasted} disabled={busy || !pasteText.trim()}>
+                {busy ? '…' : '入库'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
       </div>
     );

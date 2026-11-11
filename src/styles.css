@@ -3033,3 +3033,10 @@ body::before {
 .slot-line { display: flex; gap: 12px; font-size: 13px; }
 .slot-line span { color: var(--muted); width: 48px; }
 .slot-line b { font-weight: 500; color: var(--ink); }
+
+/* 备份 */
+.backup-box { display: flex; flex-direction: column; gap: 10px; }
+.reader-title-input {
+  width: 100%; padding: 10px; border: 1px solid var(--line-2); border-radius: 2px;
+  background: transparent; color: var(--ink); font-family: inherit; font-size: 13px;
+}
