@@ -2853,3 +2853,23 @@ body::before {
 .note-card.ta { background: rgba(232, 238, 226, 0.6); transform: rotate(0.5deg); }
 .note-text { font-size: 12.5px; line-height: 1.9; color: var(--ink); }
 .note-meta { margin-top: 8px; font-size: 10px; color: var(--muted); letter-spacing: 0.04em; }
+
+
+/* 约定 */
+.quests-box { display: flex; flex-direction: column; gap: 10px; }
+.quest-item { border: 1px solid var(--line); border-radius: 2px; padding: 10px 12px; }
+.quest-line { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--ink-2); }
+.quest-line b { margin-left: auto; font-weight: 500; color: var(--accent-deep); }
+.quest-line i { font-style: normal; font-size: 10px; color: var(--muted); }
+.quest-review {
+  margin-top: 6px; padding: 7px 14px; border: 0; border-radius: 2px;
+  background: var(--ink); color: var(--paper); cursor: pointer;
+  font-family: var(--font-ui); font-size: 11px;
+}
+.quest-rewards { display: flex; flex-wrap: wrap; gap: 7px; }
+.quest-rewards button {
+  padding: 7px 12px; border: 1px solid var(--line-2); border-radius: 2px;
+  background: transparent; color: var(--ink-2); cursor: pointer;
+  font-family: var(--font-ui); font-size: 11px;
+}
+.quest-rewards button:disabled { opacity: 0.4; }

@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import Quests from '../components/Quests.jsx';
 import { daysSince, fmtToday } from '../lib/days.js';
 
 export default function Rituals({ startDate, onGo }) {
@@ -79,11 +80,8 @@ export default function Rituals({ startDate, onGo }) {
       </div>
 
       <div className="group">
-        <div className="gl">今日积分</div>
-        <div className="score">
-          <b>128</b>
-          <span>早起 +20 · 三餐 +30 · 喝水 +18 · 学习 +60</span>
-        </div>
+        <div className="gl">约定与积分</div>
+        <Quests />
       </div>
       <div style={{ height: 30 }} />
     </>
