@@ -5,7 +5,7 @@ import StickerManager from '../components/StickerManager.jsx';
 import AvatarPicker from '../components/AvatarPicker.jsx';
 import NotifyToggle from '../components/NotifyToggle.jsx';
 import { api, auth } from '../api.js';
-import { factsApi, memoryApi } from '../api.js';
+import { factsApi, memoryApi, placeApi } from '../api.js';
 import { speak, chineseVoices, onVoicesReady, speechSupported } from '../lib/speech.js';
 
 const THEMES = [
@@ -80,6 +80,11 @@ export default function Settings({ settings, update, onGo, onSave, saving, saveM
           关掉这个开关，他就不能看；聊天里他也能主动请求，你可以当场拒绝。
           共享时底部有停止键，浏览器顶部也有。
         </div>
+      </div>
+
+      <div className="group">
+        <div className="gl">位置与天气</div>
+        <PlaceBox />
       </div>
 
       <div className="group">
@@ -466,6 +471,91 @@ function VoiceBox({ settings, update }) {
       <div className="hint-line">
         用的是手机自带的语音，不花钱、离线也能用。音色取决于你系统里装了什么。
       </div>
+    </div>
+  );
+}
+/* 位置与天气：知道你在哪、外面什么天 */
+function PlaceBox() {
+  const [loc, setLoc] = React.useState(null);
+  const [wx, setWx] = React.useState(null);
+  const [city, setCity] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  const [err, setErr] = React.useState('');
+
+  React.useEffect(() => {
+    placeApi.get().then((r) => {
+      setLoc(r.location);
+      setWx(r.weather);
+    }).catch((e) => setErr(e.message));
+  }, []);
+
+  async function useMyLocation() {
+    setBusy(true);
+    setErr('');
+    try {
+      const pos = await new Promise((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 12000 })
+      );
+      const r = await placeApi.set({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+      setLoc(r.location);
+      setWx(r.weather);
+    } catch (e) {
+      setErr(e.code === 1 ? '你拒绝了定位权限' : '定位失败，可以直接填城市名');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function useCity() {
+    if (!city.trim()) return;
+    setBusy(true);
+    setErr('');
+    try {
+      const r = await placeApi.set({ city: city.trim() });
+      setLoc(r.location);
+      setWx(r.weather);
+      setCity('');
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="place-box">
+      {loc ? (
+        <div className="fact-row">
+          <span>{loc.city || '已设置位置'} {loc.region ? `· ${loc.region}` : ''}</span>
+        </div>
+      ) : (
+        <div className="hint-line">还没设置位置。设好之后它就知道你那边天气。</div>
+      )}
+
+      {wx && (
+        <div className="hint-line">
+          现在 {wx.now.temp}°C（体感 {wx.now.feels}°C）{wx.now.text}；
+          今天 {wx.days?.[0]?.min}~{wx.days?.[0]?.max}°C
+          {wx.days?.[0]?.rain > 30 ? `，降雨 ${wx.days[0].rain}%` : ''}
+        </div>
+      )}
+
+      <button className="avatar-btn" onClick={useMyLocation} disabled={busy} style={{ alignSelf: 'flex-start' }}>
+        {busy ? '定位中…' : '取我的位置'}
+      </button>
+
+      <div className="fact-add">
+        <input
+          value={city}
+          placeholder="或者直接填城市，比如 杭州"
+          onChange={(e) => setCity(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && useCity()}
+        />
+        <button onClick={useCity} disabled={busy || !city.trim()}>设</button>
+      </div>
+
+      <div className="hint-line">只用来查天气，不会持续追踪你。</div>
+      {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
     </div>
   );
 }

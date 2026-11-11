@@ -192,6 +192,12 @@ export const factsApi = {
   remove: (id) => request('/api/facts/' + id, { method: 'DELETE' }).then((r) => r.facts || [])
 };
 
+export const placeApi = {
+  get: () => request('/api/location'),
+  set: (payload) => request('/api/location', { method: 'POST', body: JSON.stringify(payload) }),
+  weather: () => request('/api/weather').then((r) => r.weather)
+};
+
 export const callApi = {
   start: (payload) => request('/api/call/start', { method: 'POST', body: JSON.stringify(payload || {}) }),
   turn: (text, farewell, tone) =>
