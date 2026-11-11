@@ -2783,3 +2783,39 @@ body::before {
   padding: 7px 16px; background: var(--ink); color: var(--paper);
   font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.06em;
 }
+
+/* 钓鱼 */
+.fish-panel {
+  margin: 14px 0 4px; padding: 14px;
+  border: 1px solid var(--line); border-radius: 3px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.fish-status { font-size: 11.5px; color: var(--ink-3); letter-spacing: 0.02em; }
+.fish-out {
+  max-height: 260px; overflow-y: auto;
+  font-size: 12px; line-height: 1.9; color: var(--ink-2);
+  white-space: pre-wrap; padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.02); border-radius: 2px;
+}
+.fish-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.fish-actions button {
+  padding: 7px 13px; border: 1px solid var(--line-2); border-radius: 2px;
+  background: transparent; color: var(--ink-2); cursor: pointer;
+  font-family: var(--font-ui); font-size: 11px;
+}
+.fish-actions button:disabled { opacity: 0.4; }
+.fish-input { display: flex; gap: 8px; }
+.fish-input input {
+  flex: 1; padding: 9px 12px; border: 1px solid var(--line-2); border-radius: 2px;
+  background: transparent; color: var(--ink); font-family: inherit; font-size: 12px; outline: none; min-width: 0;
+}
+.fish-input button {
+  padding: 9px 16px; border: 0; border-radius: 2px; background: var(--ink); color: var(--paper);
+  font-family: var(--font-ui); font-size: 10.5px; cursor: pointer;
+}
+.fish-tell {
+  align-self: flex-start; padding: 8px 16px; border: 0; border-radius: 2px;
+  background: var(--accent-deep); color: #fff; cursor: pointer;
+  font-family: var(--font-ui); font-size: 11px;
+}
+.game-card.open { border-color: var(--ink-3); }

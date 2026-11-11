@@ -192,6 +192,12 @@ export const factsApi = {
   remove: (id) => request('/api/facts/' + id, { method: 'DELETE' }).then((r) => r.facts || [])
 };
 
+export const fishingApi = {
+  state: () => request('/api/fishing'),
+  cmd: (line) => request('/api/fishing/cmd', { method: 'POST', body: JSON.stringify({ line }) }),
+  reset: (seed) => request('/api/fishing/new', { method: 'POST', body: JSON.stringify({ seed }) })
+};
+
 export const placeApi = {
   get: () => request('/api/location'),
   set: (payload) => request('/api/location', { method: 'POST', body: JSON.stringify(payload) }),
