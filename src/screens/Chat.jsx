@@ -3,6 +3,7 @@ import { api, stickersApi, watchApi, heartbeatApi, pillApi } from '../api.js';
 import { speak, stopSpeak, listenSupported, speechSupported } from '../lib/speech.js';
 import { analyzeSong } from '../lib/audio-notes.js';
 import { refreshLocation } from '../lib/place.js';
+import { listenAmbience } from '../lib/ambience.js';
 import AvatarImg from '../components/AvatarImg.jsx';
 
 const NAME = 'Elliott';
@@ -122,6 +123,7 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
   const [pill, setPill] = useState(null);
   const [pillOpen, setPillOpen] = useState(false);
   const [listening, setListening] = useState(false);
+  const [ambienting, setAmbienting] = useState(false);
   const recRef = useRef(null);
   const [denied, setDenied] = useState(new Set());
   const photoRef = useRef(null);
@@ -369,6 +371,24 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
       setError(e.message);
     } finally {
       setSending(false);
+    }
+  }
+  /* 听一下他那儿多吵 */
+  async function hearAmbience() {
+    if (ambienting || sending) return;
+    setAmbienting(true);
+    setError('');
+    try {
+      const amb = await listenAmbience(6000);
+      if (!amb) throw new Error('没测到声音');
+      const res = await api.chat({ conversationId: convId, message: '（安静了六秒，让你听听）', ambience: amb });
+      setConvId(res.conversationId);
+      setMessages((m) => [...m, res.userMessage]);
+      appendReplies(res.replies && res.replies.length ? res.replies : [res.reply]);
+    } catch (e) {
+      setError(e.name === 'NotAllowedError' ? '你拒绝了麦克风' : e.message);
+    } finally {
+      setAmbienting(false);
     }
   }
   /* 发一首歌：本地分析结构，再把结果发给它 */
@@ -647,6 +667,11 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
             </svg>
           </button>
         )}
+        <button className={'sticker-btn' + (ambienting ? ' on' : '')} onClick={hearAmbience} title={ambienting ? '正在听…' : '听一下你那儿多吵'}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+            <path d="M4 12h2.5l1.8-4.5 2.4 9 2-6.5 1.7 3.5H20" />
+          </svg>
+        </button>
         <button className="sticker-btn" onClick={() => musicRef.current?.click()} title="发一首歌">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
             <path d="M9 17.5V6.2l9-1.7v10.8" />
