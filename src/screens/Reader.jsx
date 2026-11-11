@@ -479,7 +479,10 @@ export default function Reader({ onGo }) {
             {marks.annotations.map((a) => (
               <div className="mark-row" key={a.id}>
                 <div className="mark-main" onClick={() => jumpTo(a.chapter, 0)}>
-                  <b>{a.quote || '（无引用）'}</b>
+                  <b>
+                    {a.who === 'ta' ? '他 · ' : ''}
+                    {a.quote || '（无引用）'}
+                  </b>
                   {a.note && <span>{a.note}</span>}
                   <span>第 {a.chapter + 1} 章</span>
                 </div>

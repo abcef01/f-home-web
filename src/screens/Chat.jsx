@@ -101,7 +101,13 @@ function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAll
           )}
           <div className="meta">
             {fmtTime(m.created_at)}
-            {mine ? ' · 你' : m.model ? ` · ${m.model}${m.tokens ? ` · ${m.tokens} tokens` : ''}` : ''}
+            {mine
+                ? ' · 你'
+                : m.model
+                ? ` · ${m.model}${m.tokens ? ` · ${m.tokens} tok` : ''}${
+                    m.meta?.cacheHit != null ? ` · 缓存 ${Math.round(m.meta.cacheHit * 100)}%` : ''
+                  }`
+                : ''}
           </div>
         </div>
         {showAvatars && mine && <AvatarImg who="me" url={avatars.me} size="s26" />}
