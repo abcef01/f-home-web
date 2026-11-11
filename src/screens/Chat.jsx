@@ -35,6 +35,15 @@ function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAll
           {m.content && m.content !== '[表情]' && <div className="bubble">{m.content}</div>}
           {m.meta?.sticker && <img className="sticker-msg" src={m.meta.sticker} alt="表情" />}
           {m.meta?.image && <img className="chat-image" src={m.meta.image} alt="图片" />}
+          {m.meta?.music && (
+            <div className="song-card">
+              <span className="song-name">🎵 {m.meta.music.fileName || '一首歌'}</span>
+              <span className="song-meta">
+                {m.meta.music.bpm ? `${m.meta.music.bpm} BPM` : ''}
+                {m.meta.music.key ? ` · ${m.meta.music.key}` : ''}
+              </span>
+            </div>
+          )}
           {m.meta?.callRequest && (
             <div className="call-card">
               <span>想给你打个电话</span>
@@ -114,6 +123,7 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
   const [denied, setDenied] = useState(new Set());
   const photoRef = useRef(null);
   const replyTimer = useRef(null);
+  const musicRef = useRef(null);
   const [mood, setMood] = useState(null);
   const shareRef = useRef(null);
   const videoRef = useRef(null);
@@ -354,6 +364,32 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
       appendReplies(res.replies && res.replies.length ? res.replies : [res.reply]);
     } catch (e) {
       setError(e.message);
+    } finally {
+      setSending(false);
+    }
+  }
+  /* 发一首歌：本地分析结构，再把结果发给它 */
+  async function sendSong(file) {
+    if (!file || sending) return;
+    setError('');
+    setSending(true);
+    try {
+      const buf = await file.arrayBuffer();
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const audio = await ctx.decodeAudioData(buf);
+      await ctx.close().catch(() => {});
+
+      const ch = audio.getChannelData(0);
+      const music = analyzeSong(ch, audio.sampleRate, { maxSeconds: 180 });
+      if (music.error) throw new Error(music.error);
+      music.fileName = file.name.replace(/\.[^.]+$/, '').slice(0, 40);
+
+      const res = await api.chat({ conversationId: convId, message: '（发来一首歌）', music });
+      setConvId(res.conversationId);
+      setMessages((m) => [...m, res.userMessage]);
+      appendReplies(res.replies && res.replies.length ? res.replies : [res.reply]);
+    } catch (e) {
+      setError(e.message.includes('decode') ? '这个格式解不开，试试 mp3 或 m4a' : e.message);
     } finally {
       setSending(false);
     }
@@ -608,6 +644,15 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
             </svg>
           </button>
         )}
+        <button className="sticker-btn" onClick={() => musicRef.current?.click()} title="发一首歌">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+            <path d="M9 17.5V6.2l9-1.7v10.8" />
+            <circle cx="7" cy="17.5" r="2.2" />
+            <circle cx="16" cy="15.3" r="2.2" />
+          </svg>
+        </button>
+        <input ref={musicRef} type="file" accept="audio/*" style={{ display: 'none' }}
+          onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) sendSong(f); }} />
         <button className={'sticker-btn' + (pill ? ' on' : '')} onClick={() => setPillOpen((v) => !v)} title="药盒">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
             <rect x="4" y="9" width="16" height="9" rx="4.5" transform="rotate(-40 12 13.5)" />
