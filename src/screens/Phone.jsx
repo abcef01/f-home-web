@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { nativeUsage, nativeNotifier } from '../lib/native.js';
-import { api, auth, healthApi } from '../api.js';
+import { api, auth, healthApi, deviceUsageApi } from '../api.js';
 
 const fmt = (ms) => {
   const m = Math.round(ms / 60000);
@@ -41,6 +41,8 @@ export default function Phone({ onGo }) {
       setOk(!!r.granted);
       const list = (r.apps || []).sort((a, b) => b.ms - a.ms);
       setApps(list);
+      /* 上报给他，这样他也能看到 */
+      if (list.length) deviceUsageApi.report(list).catch(() => {});
     } catch (e) {
       setErr(e.message);
     } finally {

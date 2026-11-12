@@ -232,6 +232,10 @@ export const ritualsApi = {
   check: (id) => request('/api/rituals/check', { method: 'POST', body: JSON.stringify({ id }) })
 };
 
+export const deviceUsageApi = {
+  report: (apps) => request('/api/device/usage', { method: 'POST', body: JSON.stringify({ apps }) })
+};
+
 export const healthApi = {
   get: () => request('/api/health'),
   scan: (image) => request('/api/watch', { method: 'POST', body: JSON.stringify({ image, mode: 'health' }) })
