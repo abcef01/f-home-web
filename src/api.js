@@ -44,27 +44,60 @@ function authError() {
   return e;
 }
 
-async function request(path, options = {}) {
-  const res = await fetch(BASE + path, {
-    ...options,
-    headers: headers(options.headers || {})
-  });
-  /* 登录接口的 401 是「口令不对」，要原样抛出；其他 401 才代表需要重新解锁 */
-  if (res.status === 401 && !path.startsWith('/api/auth/login')) throw authError();
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  const text = await res.text();
-  let json = null;
+/* 带超时 + 重试的请求：Render 免费档冷启动要几十秒，别一次失败就报错 */
+async function rawFetch(url, options, timeoutMs = 45000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    json = text ? JSON.parse(text) : null;
-  } catch {
-    /* 非 JSON 响应 */
+    return await fetch(url, { ...options, signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
   }
-  if (!res.ok) {
-    const msg = json?.error || json?.message || text.slice(0, 160) || `HTTP ${res.status}`;
-    throw new Error(msg);
-  }
-  return json;
 }
+
+async function request(path, options = {}, { retry = 1 } = {}) {
+  const urls = [BASE + path];
+  /* 如果配了别的后端地址，它挂了就退回默认地址再试一次 */
+  if (BASE !== 'https://f-home-api.onrender.com') urls.push('https://f-home-api.onrender.com' + path);
+
+  let lastErr = null;
+
+  for (const url of urls) {
+    for (let attempt = 0; attempt <= retry; attempt++) {
+      try {
+        const res = await rawFetch(url, { ...options, headers: headers(options.headers || {}) });
+
+        if (res.status === 401 && !path.startsWith('/api/auth/login')) throw authError();
+
+        const text = await res.text();
+        let json = null;
+        try {
+          json = text ? JSON.parse(text) : null;
+        } catch {
+          /* 非 JSON */
+        }
+        if (!res.ok) {
+          const msg = json?.error || json?.message || text.slice(0, 160) || `HTTP ${res.status}`;
+          throw new Error(msg);
+        }
+        return json;
+      } catch (e) {
+        /* 业务错误（有响应）直接抛，不再重试 */
+        if (e && e.status === 401) throw e;
+        if (e && /^HTTP |口令|没有|失败|不够|太长/.test(String(e.message || ''))) throw e;
+
+        lastErr = e;
+        if (attempt < retry) await sleep(2500);
+      }
+    }
+  }
+
+  const why = lastErr && (lastErr.name === 'AbortError' ? '超时' : lastErr.message || '网络错误');
+  throw new Error(`连不上后端（${BASE}）：${why}。可能是服务在休眠，等半分钟再试。`);
+}
+
 
 export const api = {
   base: BASE,
