@@ -199,6 +199,12 @@ export const ritualsApi = {
   check: (id) => request('/api/rituals/check', { method: 'POST', body: JSON.stringify({ id }) })
 };
 
+export const readingsApi = {
+  list: () => request('/api/readings'),
+  make: (kind, input, question) => request('/api/readings', { method: 'POST', body: JSON.stringify({ kind, input, question }) }),
+  remove: (id) => request('/api/readings/' + id, { method: 'DELETE' })
+};
+
 export const favoritesApi = {
   list: () => request('/api/favorites'),
   add: (payload) => request('/api/favorites', { method: 'POST', body: JSON.stringify(payload) }),
