@@ -3136,3 +3136,32 @@ body::before {
   border: 1px solid var(--line); border-radius: 2px; padding: 4px 8px;
 }
 .water-chip button { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 12px; }
+
+
+/* 相册 */
+.album-day { margin-bottom: 18px; }
+.album-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.album-tile { aspect-ratio: 1; overflow: hidden; border-radius: 2px; background: var(--line); cursor: pointer; }
+.album-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.album-tile.sticker img { object-fit: contain; padding: 10px; }
+.album-big {
+  position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.9);
+  display: flex; align-items: center; justify-content: center; padding: 20px; cursor: zoom-out;
+}
+.album-big img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+
+/* 通话小窗 */
+.call-cam {
+  position: absolute; right: 14px; top: 64px;
+  width: 104px; border-radius: 4px; overflow: hidden;
+  background: #000; z-index: 5;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+}
+.call-cam video { width: 100%; display: block; }
+.call-cam-note {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 5px 6px; font-size: 9px; line-height: 1.4;
+  color: #fff; background: rgba(0,0,0,0.55);
+}
+.call-btn.on { background: var(--ink); color: var(--paper); }

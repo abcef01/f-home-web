@@ -1,5 +1,6 @@
 ﻿import React from 'react';
 import { daysSince, fmtSince } from '../lib/days.js';
+import { dailyApi } from '../api.js';
 
 const QUICK = [
   { id: 'watch', label: '一起看', go: null },
@@ -15,6 +16,11 @@ const QUICK = [
 ];
 
 export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo }) {
+  const [daily, setDaily] = React.useState(null);
+
+  React.useEffect(() => {
+    dailyApi.get(me).then(setDaily).catch(() => {});
+  }, [me]);
   const days = daysSince(startDate);
   return (
     <>
@@ -23,11 +29,7 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo }) 
         <div className="home-title" onClick={() => onGo('settings')} title="点一下可以改">
           {homeTitle}
         </div>
-        <div className="home-greet">
-          晚上好，{me}。
-          <br />
-          今天也在这里等你。
-        </div>
+        <div className="home-greet">{(daily && daily.greeting) || '今天也在这里。'}</div>
       </div>
 
       <div className="days-block">
@@ -38,7 +40,7 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo }) 
 
       <div className="quote-card">
         <div className="mark">“</div>
-        <div className="quote-text">别急，我们还有很多个这样的晚上。</div>
+        <div className="quote-text">{(daily && daily.quote) || '别急，我们还有很多个这样的晚上。'}</div>
         <div className="quote-from">每日一句 · Elliott</div>
       </div>
 

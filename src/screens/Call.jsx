@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
-import { callApi } from '../api.js';
+import { callApi, callFrameApi } from '../api.js';
 import { speak, stopSpeak, listenStream, listenSupported } from '../lib/speech.js';
 import { createToneMeter } from '../lib/tone.js';
 
@@ -17,6 +17,8 @@ export default function Call({ voice = {}, onClose }) {
   const [muted, setMuted] = useState(false);
   const [summary, setSummary] = useState('');
   const [err, setErr] = useState('');
+  const [cameraOn, setCameraOn] = useState(false);
+  const [frameNote, setFrameNote] = useState('');
 
   const recRef = useRef(null);
   const audioCtxRef = useRef(null);
@@ -24,10 +26,67 @@ export default function Call({ voice = {}, onClose }) {
   const phaseRef = useRef('dialing');
   const meterRef = useRef(null);
   const micRef = useRef(null);
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+  const frameTimer = useRef(null);
 
   useEffect(() => {
     phaseRef.current = phase;
   }, [phase]);
+
+  /* 关摄像头 */
+  function stopCamera() {
+    if (frameTimer.current) clearInterval(frameTimer.current);
+    frameTimer.current = null;
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    setCameraOn(false);
+  }
+
+  /* 每 20 秒抓一帧给他看 */
+  function grabFrame() {
+    const v = videoRef.current;
+    if (!v || !v.videoWidth) return;
+    const canvas = document.createElement('canvas');
+    const w = 480;
+    const h = Math.round((v.videoHeight / v.videoWidth) * w);
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(v, 0, 0, w, h);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+    callFrameApi
+      .send(dataUrl)
+      .then((r) => {
+        if (r?.desc) setFrameNote(r.desc.slice(0, 90));
+      })
+      .catch(() => {});
+  }
+
+  async function toggleCamera() {
+    if (cameraOn) {
+      stopCamera();
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+      streamRef.current = stream;
+      setCameraOn(true);
+      requestAnimationFrame(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(() => {});
+        }
+      });
+      setTimeout(grabFrame, 1200);
+      frameTimer.current = setInterval(grabFrame, 20000);
+    } catch (e) {
+      setErr('打不开摄像头：' + (e.message || ''));
+    }
+  }
+
+  useEffect(() => () => stopCamera(), []);
 
   /* 响铃：两声回铃音，然后接通 */
   useEffect(() => {
@@ -226,6 +285,13 @@ export default function Call({ voice = {}, onClose }) {
         </div>
       </div>
 
+      {cameraOn && (
+        <div className="call-cam">
+          <video ref={videoRef} muted playsInline />
+          {frameNote && <div className="call-cam-note">{frameNote}</div>}
+        </div>
+      )}
+
       <div className="call-body">
         {lines.slice(-6).map((l, i) => (
           <div key={i} className={'call-line ' + l.role}>
@@ -249,6 +315,13 @@ export default function Call({ voice = {}, onClose }) {
           </button>
         ) : (
           <>
+            <button
+              className={'call-btn' + (cameraOn ? ' on' : '')}
+              onClick={toggleCamera}
+              title="视频"
+            >
+              {cameraOn ? '关镜头' : '开镜头'}
+            </button>
             <button
               className={'call-btn mute' + (muted ? ' on' : '')}
               onClick={() => {

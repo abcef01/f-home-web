@@ -232,17 +232,6 @@ export default function Settings({ settings, update, onGo, onSave, saving, saveM
         </div>
       </div>
 
-      <div className="group">
-        <div className="gl">语言</div>
-        <div className="seg">
-          <button className={s.lang === 'zh' ? 'on' : ''} onClick={() => update({ lang: 'zh' })}>
-            中文
-          </button>
-          <button className={s.lang === 'en' ? 'on' : ''} onClick={() => update({ lang: 'en' })}>
-            English
-          </button>
-        </div>
-      </div>
 
       <div className="group">
         <div className="gl">排版</div>

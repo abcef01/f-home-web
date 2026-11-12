@@ -199,6 +199,18 @@ export const ritualsApi = {
   check: (id) => request('/api/rituals/check', { method: 'POST', body: JSON.stringify({ id }) })
 };
 
+export const dailyApi = {
+  get: (me) => request('/api/daily' + (me ? '?me=' + encodeURIComponent(me) : ''))
+};
+
+export const albumApi = {
+  list: () => request('/api/album')
+};
+
+export const callFrameApi = {
+  send: (image) => request('/api/call/frame', { method: 'POST', body: JSON.stringify({ image }) })
+};
+
 export const waterApi = {
   get: () => request('/api/water'),
   add: (ml, note) => request('/api/water', { method: 'POST', body: JSON.stringify({ ml, note }) }),
