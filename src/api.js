@@ -232,6 +232,11 @@ export const ritualsApi = {
   check: (id) => request('/api/rituals/check', { method: 'POST', body: JSON.stringify({ id }) })
 };
 
+export const healthApi = {
+  get: () => request('/api/health'),
+  scan: (image) => request('/api/watch', { method: 'POST', body: JSON.stringify({ image, mode: 'health' }) })
+};
+
 export const studyApi = {
   get: () => request('/api/study'),
   start: (name) => request('/api/study/start', { method: 'POST', body: JSON.stringify({ name }) }),

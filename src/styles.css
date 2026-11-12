@@ -3378,3 +3378,8 @@ body::before {
 .phone-ms { float: right; font-size: 11px; color: var(--muted); }
 .phone-bar { margin-top: 5px; height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
 .phone-bar i { display: block; height: 100%; background: var(--ink-3); }
+
+.phone-health { display: flex; gap: 18px; align-items: baseline; margin: 12px 0; flex-wrap: wrap; }
+.phone-health b { font-size: 20px; font-weight: 400; color: var(--ink); }
+.phone-health span { font-size: 10px; color: var(--muted); margin-left: 4px; }
+.phone-health-time { width: 100%; font-size: 10px; color: var(--muted); margin-top: 4px; }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { nativeUsage, nativeNotifier } from '../lib/native.js';
-import { api, auth } from '../api.js';
+import { api, auth, healthApi } from '../api.js';
 
 const fmt = (ms) => {
   const m = Math.round(ms / 60000);
@@ -14,8 +14,15 @@ export default function Phone({ onGo }) {
   const [err, setErr] = useState('');
   const [notify, setNotify] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [health, setHealth] = useState(null);
+  const [healthBusy, setHealthBusy] = useState(false);
+  const [healthMsg, setHealthMsg] = useState('');
 
   const inApp = nativeUsage.available();
+
+  useEffect(() => {
+    healthApi.get().then((r) => setHealth(r.health)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!inApp) return;
@@ -94,7 +101,69 @@ export default function Phone({ onGo }) {
               </div>
             ))}
 
-            <div className="section-label" style={{ marginTop: 26 }}>
+            <div className="section-label" style={{ marginTop: 26 }}>手环</div>
+        <div className="hint-line">
+          手环的数据在华为运动健康里，App 读不到。办法是：打开华为运动健康 → 截屏 → 在这里选那张图。
+        </div>
+
+        {health && (
+          <div className="phone-health">
+            <div>
+              <b>{health.steps ?? '—'}</b>
+              <span>步</span>
+            </div>
+            <div>
+              <b>{health.sleepHours ?? '—'}</b>
+              <span>小时睡眠</span>
+            </div>
+            <div>
+              <b>{health.restingHr ?? '—'}</b>
+              <span>静息心率</span>
+            </div>
+            {health.at && (
+              <div className="phone-health-time">
+                {new Date(health.at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })} 识别
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="phone-actions">
+          <label className="reader-btn">
+            {healthBusy ? '读取中…' : '选一张截图'}
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                e.target.value = '';
+                if (!f) return;
+                setHealthBusy(true);
+                setHealthMsg('');
+                try {
+                  const dataUrl = await new Promise((res, rej) => {
+                    const r = new FileReader();
+                    r.onload = () => res(String(r.result));
+                    r.onerror = () => rej(new Error('读图失败'));
+                    r.readAsDataURL(f);
+                  });
+                  const r = await healthApi.scan(dataUrl);
+                  if (r.none) setHealthMsg('这张图里没认出健康数据');
+                  else if (r.health) setHealth(r.health);
+                  else if (r.error) setHealthMsg(r.error);
+                } catch (err) {
+                  setHealthMsg(err.message);
+                } finally {
+                  setHealthBusy(false);
+                }
+              }}
+            />
+          </label>
+        </div>
+        {healthMsg && <div className="hint-line">{healthMsg}</div>}
+
+        <div className="section-label" style={{ marginTop: 26 }}>
               后台通知
             </div>
             <div className="hint-line">
