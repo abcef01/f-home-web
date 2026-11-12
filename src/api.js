@@ -199,6 +199,14 @@ export const ritualsApi = {
   check: (id) => request('/api/rituals/check', { method: 'POST', body: JSON.stringify({ id }) })
 };
 
+export const walletApi = {
+  get: () => request('/api/wallet'),
+  transfer: (amount, note) => request('/api/wallet/transfer', { method: 'POST', body: JSON.stringify({ amount, note }) }),
+  wish: (payload) => request('/api/wallet/wish', { method: 'POST', body: JSON.stringify(payload) }),
+  pay: (id) => request('/api/wallet/pay', { method: 'POST', body: JSON.stringify({ id }) }),
+  reject: (id) => request('/api/wallet/reject', { method: 'POST', body: JSON.stringify({ id }) })
+};
+
 export const sleepApi = {
   list: () => request('/api/sleep'),
   save: (payload) => request('/api/sleep', { method: 'POST', body: JSON.stringify(payload) })

@@ -1,7 +1,13 @@
-﻿import React from 'react';
+﻿import React, { useEffect, useState } from 'react';
+import { walletApi } from '../api.js';
 import { daysSince } from '../lib/days.js';
 
 export default function Aerie({ me, startDate, onGo }) {
+  const [balance, setBalance] = useState(null);
+  useEffect(() => {
+    walletApi.get().then((r) => setBalance(r.balance)).catch(() => {});
+  }, []);
+
   return (
     <>
       <div className="aerie-head">
@@ -26,16 +32,20 @@ export default function Aerie({ me, startDate, onGo }) {
           <i>Memory</i>
         </div>
         <div className="stat">
-          <b>¥ 248</b>
+          <b>{balance === null ? '—' : balance}</b>
           <i>Wallet</i>
         </div>
       </div>
 
       <div className="list">
+        <div className="list-item" onClick={() => onGo('wallet')}>
+          <span className="t">钱包</span>
+          <span className="v">{balance === null ? '—' : balance + ' 枚'}</span>
+          <span className="arrow">›</span>
+        </div>
         {[
           ['记忆', '1,286 条'],
           ['情感线', '最近：亲近'],
-          ['钱包', '¥ 248.00'],
           ['声音', '低音 · 慢'],
           ['通知', '2 条未读'],
           ['权限与隐私', '位置 · 屏幕']
