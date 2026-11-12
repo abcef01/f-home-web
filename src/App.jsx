@@ -17,6 +17,7 @@ import Favorites from './screens/Favorites.jsx';
 import Reading from './screens/Reading.jsx';
 import Study from './screens/Study.jsx';
 import Memory from './screens/Memory.jsx';
+import Phone from './screens/Phone.jsx';
 import Slots from './screens/Slots.jsx';
 import Lock from './components/Lock.jsx';
 import InstallHint from './components/InstallHint.jsx';
@@ -24,6 +25,7 @@ import { authApi, uiSettings, avatarsApi, drivesApi, unreadApi } from './api.js'
 import { startDeviceReporting } from './lib/device.js';
 import { takeSharedImage } from './lib/share.js';
 import { startLocationSync } from './lib/place.js';
+import { nativeNotifier } from './lib/native.js';
 
 const DEFAULTS = {
   theme: 'cream',
@@ -78,7 +80,7 @@ export default function App() {
       alive = false;
     };
   }, []);
-  const KNOWN = ['object', 'home', 'chat', 'read', 'wallet', 'moments', 'favorites', 'reading', 'study', 'memory', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games', 'call'];
+  const KNOWN = ['object', 'home', 'chat', 'read', 'wallet', 'moments', 'favorites', 'reading', 'study', 'memory', 'phone', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games', 'call'];
   const [screen, setScreen] = useState(() => {
     const h = (window.location.hash || '').replace('#', '');
     return KNOWN.includes(h) && h !== 'object' ? h : 'opening';
@@ -233,6 +235,13 @@ export default function App() {
 
   const [unread, setUnread] = React.useState({ diary: 0, notes: 0, moments: 0 });
 
+  /* APK 里：登录后自动开启后台通知 */
+  React.useEffect(() => {
+    if (authState !== 'ok') return;
+    if (!nativeNotifier.available()) return;
+    nativeNotifier.start(api.base, auth.token).catch(() => {});
+  }, [authState]);
+
   React.useEffect(() => {
     if (authState !== 'ok') return;
     let alive = true;
@@ -291,6 +300,7 @@ export default function App() {
       reading: <Reading onGo={setScreen} />,
       study: <Study onGo={setScreen} />,
       memory: <Memory onGo={setScreen} />,
+      phone: <Phone onGo={setScreen} />,
       settings: (
         <Settings
           settings={settings}

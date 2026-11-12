@@ -41,6 +41,11 @@ export default function Aerie({ me, startDate, onGo, unread = {} }) {
       </div>
 
       <div className="list">
+        <div className="list-item" onClick={() => onGo('phone')}>
+          <span className="t">手机</span>
+          <span className="v">App 使用时长 · 后台通知</span>
+          <span className="arrow">›</span>
+        </div>
         <div className="list-item" onClick={() => onGo('memory')}>
           <span className="t">记忆</span>
           <span className="v">{memCount === null ? '—' : memCount + ' 条'}</span>

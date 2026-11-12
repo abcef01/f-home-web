@@ -15,6 +15,7 @@ import Reading from '../src/screens/Reading.jsx';
 import Reader from '../src/screens/Reader.jsx';
 import Album from '../src/screens/Album.jsx';
 import Settings from '../src/screens/Settings.jsx';
+import Phone from '../src/screens/Phone.jsx';
 
 const noop = () => {};
 const MessageSample = () => (
@@ -43,6 +44,7 @@ const screens = {
   Reading: <Reading onGo={noop} />,
   Reader: <Reader onGo={noop} />,
   Album: <Album onGo={noop} />,
+  Phone: <Phone onGo={noop} />,
   Settings: <Settings settings={{}} update={noop} onSave={noop} onGo={noop} avatars={{}} onAvatarsChange={noop} />
 };
 

@@ -36,3 +36,25 @@ export async function openUsageAccessSettings() {
     return false;
   }
 }
+
+
+/* ---------- 原生能力（只在 APK 里有，网页版返回 null） ---------- */
+function plugin(name) {
+  const cap = typeof window !== 'undefined' && window.Capacitor;
+  if (!cap || !cap.Plugins || !cap.Plugins[name]) return null;
+  return cap.Plugins[name];
+}
+
+export const nativeUsage = {
+  available: () => !!plugin('Usage'),
+  status: () => plugin('Usage')?.status?.() ?? Promise.resolve({ granted: false }),
+  openSettings: () => plugin('Usage')?.openSettings?.() ?? Promise.resolve(),
+  today: () => plugin('Usage')?.today?.() ?? Promise.resolve({ granted: false, apps: [] })
+};
+
+export const nativeNotifier = {
+  available: () => !!plugin('Notifier'),
+  start: (base, token) => plugin('Notifier')?.start?.({ base, token }) ?? Promise.resolve({}),
+  stop: () => plugin('Notifier')?.stop?.() ?? Promise.resolve({}),
+  status: () => plugin('Notifier')?.status?.() ?? Promise.resolve({})
+};
