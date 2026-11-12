@@ -18,6 +18,27 @@ const THEMES = [
 ];
 
 function Slider({ label, value, min, max, step, onChange, digits = 2 }) {
+  return (
+    <div className="slider-row">
+      <span className="lb">{label}</span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+      />
+      <span className="val">
+        {digits === 0 ? Math.round(value || 0) : Number(value || 0).toFixed(digits).replace(/0+$/, '').replace(/\.$/, '')}
+      </span>
+    </div>
+  );
+}
+
+export default function Settings({ settings, update, onGo, onSave, saving, saveMsg, avatars, onAvatarsChange }) {
+  const s = settings;
+
   async function pickBg(e, scope) {
     const f = e.target.files?.[0];
     e.target.value = '';
@@ -48,26 +69,6 @@ function Slider({ label, value, min, max, step, onChange, digits = 2 }) {
     }
   }
 
-  return (
-    <div className="slider-row">
-      <span className="lb">{label}</span>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-      />
-      <span className="val">
-        {digits === 0 ? Math.round(value) : value.toFixed(digits).replace(/0+$/, '').replace(/\.$/, '')}
-      </span>
-    </div>
-  );
-}
-
-export default function Settings({ settings, update, onGo, onSave, saving, saveMsg, avatars, onAvatarsChange }) {
-  const s = settings;
   return (
     <>
       <div className="set-head">
@@ -484,7 +485,7 @@ function VoiceBox({ settings, update }) {
       </div>
 
       <div className="param-label">
-        语速 <span className="param-val">{(voice.rate || 1).toFixed(2)}×</span>
+        语速 <span className="param-val">{(voice?.rate || 1).toFixed(2)}×</span>
       </div>
       <input
         className="range"

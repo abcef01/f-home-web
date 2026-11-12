@@ -200,6 +200,7 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
   const [healthNote, setHealthNote] = useState('');
   const [pill, setPill] = useState(null);
   const [pillOpen, setPillOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const [listening, setListening] = useState(false);
   const [ambienting, setAmbienting] = useState(false);
   const recRef = useRef(null);
@@ -827,55 +828,70 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
       <video ref={videoRef} className="watch-video" muted playsInline />
 
       <div className="composer">
-        <button className="sticker-btn" onClick={() => photoRef.current?.click()} title="发图片">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-            <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
-            <circle cx="9" cy="11" r="1.6" />
-            <path d="M4.5 17l4.5-4 3.5 3 3-2.5 4 3.5" />
+        <button
+          className={"sticker-btn tools-toggle" + (toolsOpen ? " on" : "")}
+          onClick={() => setToolsOpen((v) => !v)}
+          title="更多"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <path d="M12 5v14M5 12h14" />
           </svg>
         </button>
-        <input ref={photoRef} type="file" accept="image/*" style={{ display: 'none' }}
-          onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) sendImage(f); }} />
-        {listenSupported() && (
-          <button
-            className={'sticker-btn' + (listening ? ' on' : '')}
-            onClick={listening ? stopListening : startListening}
-            title={listening ? '松开结束' : '按住说话'}
-          >
+
+        {toolsOpen && (
+          <div className="composer-tools">
+          <button className="sticker-btn" onClick={() => photoRef.current?.click()} title="发图片">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-              <rect x="9" y="3.5" width="6" height="11" rx="3" />
-              <path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18v2.5" />
+              <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
+              <circle cx="9" cy="11" r="1.6" />
+              <path d="M4.5 17l4.5-4 3.5 3 3-2.5 4 3.5" />
             </svg>
           </button>
+          <input ref={photoRef} type="file" accept="image/*" style={{ display: 'none' }}
+            onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) sendImage(f); }} />
+          {listenSupported() && (
+            <button
+              className={'sticker-btn' + (listening ? ' on' : '')}
+              onClick={listening ? stopListening : startListening}
+              title={listening ? '松开结束' : '按住说话'}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+                <rect x="9" y="3.5" width="6" height="11" rx="3" />
+                <path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18v2.5" />
+              </svg>
+            </button>
+          )}
+          <button className={'sticker-btn' + (ambienting ? ' on' : '')} onClick={hearAmbience} title={ambienting ? '正在听…' : '听一下你那儿多吵'}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <path d="M4 12h2.5l1.8-4.5 2.4 9 2-6.5 1.7 3.5H20" />
+            </svg>
+          </button>
+          <button className="sticker-btn" onClick={() => musicRef.current?.click()} title="发一首歌">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <path d="M9 17.5V6.2l9-1.7v10.8" />
+              <circle cx="7" cy="17.5" r="2.2" />
+              <circle cx="16" cy="15.3" r="2.2" />
+            </svg>
+          </button>
+          <input ref={musicRef} type="file" accept="audio/*" style={{ display: 'none' }}
+            onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) sendSong(f); }} />
+          <button className={'sticker-btn' + (pill ? ' on' : '')} onClick={() => setPillOpen((v) => !v)} title="药盒">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <rect x="4" y="9" width="16" height="9" rx="4.5" transform="rotate(-40 12 13.5)" />
+              <path d="M9.5 8.5l5 5" />
+            </svg>
+          </button>
+          <button className="sticker-btn" onClick={() => setStickerSheet(true)} title="表情包">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <circle cx="12" cy="12" r="8" />
+              <circle cx="9.2" cy="10" r="0.9" fill="currentColor" stroke="none" />
+              <circle cx="14.8" cy="10" r="0.9" fill="currentColor" stroke="none" />
+              <path d="M8.6 14.2a4.2 4.2 0 0 0 6.8 0" />
+            </svg>
+          </button>
+          </div>
         )}
-        <button className={'sticker-btn' + (ambienting ? ' on' : '')} onClick={hearAmbience} title={ambienting ? '正在听…' : '听一下你那儿多吵'}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-            <path d="M4 12h2.5l1.8-4.5 2.4 9 2-6.5 1.7 3.5H20" />
-          </svg>
-        </button>
-        <button className="sticker-btn" onClick={() => musicRef.current?.click()} title="发一首歌">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-            <path d="M9 17.5V6.2l9-1.7v10.8" />
-            <circle cx="7" cy="17.5" r="2.2" />
-            <circle cx="16" cy="15.3" r="2.2" />
-          </svg>
-        </button>
-        <input ref={musicRef} type="file" accept="audio/*" style={{ display: 'none' }}
-          onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) sendSong(f); }} />
-        <button className={'sticker-btn' + (pill ? ' on' : '')} onClick={() => setPillOpen((v) => !v)} title="药盒">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-            <rect x="4" y="9" width="16" height="9" rx="4.5" transform="rotate(-40 12 13.5)" />
-            <path d="M9.5 8.5l5 5" />
-          </svg>
-        </button>
-        <button className="sticker-btn" onClick={() => setStickerSheet(true)} title="表情包">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-            <circle cx="12" cy="12" r="8" />
-            <circle cx="9.2" cy="10" r="0.9" fill="currentColor" stroke="none" />
-            <circle cx="14.8" cy="10" r="0.9" fill="currentColor" stroke="none" />
-            <path d="M8.6 14.2a4.2 4.2 0 0 0 6.8 0" />
-          </svg>
-        </button>
+
         <div className="field">
           <svg viewBox="0 0 24 24">
             <path d="M12 5.5v13M5.5 12h13" />

@@ -357,6 +357,7 @@ export default function Games({ onGo }) {
   const [farmOpen, setFarmOpen] = useState(false);
   const [burgerOpen, setBurgerOpen] = useState(false);
   const [pondOpen, setPondOpen] = useState(false);
+  const [slotOpen, setSlotOpen] = useState(false);
   const [gomokuOpen, setGomokuOpen] = useState(false);
   const [tttOpen, setTttOpen] = useState(false);
   const [rpsOpen, setRpsOpen] = useState(false);
