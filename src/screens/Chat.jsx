@@ -45,7 +45,7 @@ function moodLine(s) {
 }
 
 /* 单条消息（含可折叠的思考链） */
-function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAllowWatch, onDenyWatch }) {
+export function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAllowWatch, onDenyWatch, voice = {}, handlers = {} }) {
   const [open, setOpen] = useState(false);
   const [favDone, setFavDone] = useState(false);
 
@@ -119,11 +119,11 @@ function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAll
               </span>
             </div>
           )}
-          {m.meta?.ask && <AskCard type={m.meta.ask} onWatch={() => startWatch()} onCall={onCall} onWhere={() => refreshLocation({ force: true })} onListen={hearAmbience} onPhoto={() => photoRef.current?.click()} />}
+          {m.meta?.ask && <AskCard type={m.meta.ask} onWatch={handlers.onWatch} onCall={handlers.onCall} onWhere={handlers.onWhere} onListen={handlers.onListen} onPhoto={handlers.onPhoto} />}
           {m.meta?.callRequest && (
             <div className="call-card">
               <span>想给你打个电话</span>
-              <button onClick={() => onCall && onCall()}>接听</button>
+              <button onClick={() => handlers.onCall && handlers.onCall()}>接听</button>
             </div>
           )}
           {m.meta?.thought && <ThoughtBlock text={m.meta.thought} />}
@@ -771,6 +771,14 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
             denied={denied}
             onAllowWatch={() => startWatch()}
             onDenyWatch={(id) => setDenied((d) => new Set(d).add(id))}
+            voice={voice}
+            handlers={{
+              onWatch: () => startWatch(),
+              onCall,
+              onWhere: () => refreshLocation({ force: true }),
+              onListen: hearAmbience,
+              onPhoto: () => photoRef.current?.click()
+            }}
           />
         ))}
 

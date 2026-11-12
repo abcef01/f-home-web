@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 import { renderToString } from 'react-dom/server';
-import Chat from '../src/screens/Chat.jsx';
+import Chat, { Message } from '../src/screens/Chat.jsx';
 import Home from '../src/screens/Home.jsx';
 import Aerie from '../src/screens/Aerie.jsx';
 import Memory from '../src/screens/Memory.jsx';
@@ -17,7 +17,18 @@ import Album from '../src/screens/Album.jsx';
 import Settings from '../src/screens/Settings.jsx';
 
 const noop = () => {};
+const MessageSample = () => (
+  <div>
+    <Message m={{ id: '1', role: 'assistant', content: '测试消息' }} voice={{}} />
+    <Message m={{ id: '2', role: 'assistant', content: '[表情]', meta: { sticker: 'x' } }} voice={{}} />
+    <Message m={{ id: '3', role: 'assistant', content: '', meta: { image: 'x', thought: '想了想' } }} voice={{}} />
+    <Message m={{ id: '4', role: 'assistant', content: '', meta: { ask: 'watch' } }} voice={{}} />
+    <Message m={{ id: '5', role: 'assistant', content: '歌', meta: { music: { fileName: 'x', bpm: 100 } } }} voice={{}} />
+  </div>
+);
+
 const screens = {
+  Messages: <MessageSample />,
   Chat: <Chat me="Bunny" onGo={noop} onCall={noop} avatars={{}} />,
   Home: <Home me="Bunny" homeTitle="Bunny's Home" startDate="2025-02-01" onGo={noop} unread={{}} />,
   Aerie: <Aerie me="Bunny" startDate="2025-02-01" onGo={noop} unread={{}} />,
