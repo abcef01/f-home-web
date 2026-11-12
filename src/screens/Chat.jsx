@@ -3,6 +3,7 @@ import { api, stickersApi, watchApi, heartbeatApi, pillApi, favoritesApi } from 
 import { speak, stopSpeak, listenSupported, speechSupported } from '../lib/speech.js';
 import { analyzeSong } from '../lib/audio-notes.js';
 import { analyzeSing } from '../lib/sing.js';
+import { listenStream } from '../lib/speech.js';
 import { refreshLocation } from '../lib/place.js';
 import { listenAmbience } from '../lib/ambience.js';
 import AvatarImg from '../components/AvatarImg.jsx';
@@ -46,6 +47,20 @@ function moodLine(s) {
 /* 单条消息（含可折叠的思考链） */
 function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAllowWatch, onDenyWatch }) {
   const [open, setOpen] = useState(false);
+  const [favDone, setFavDone] = useState(false);
+
+  /* 双击 / 长按收藏这句话 */
+  async function saveFav() {
+    const text = (m.content || "").trim();
+    if (!text || favDone) return;
+    try {
+      await favoritesApi.add({ type: "text", text, from: mine ? "我" : "Elliott" });
+      setFavDone(true);
+      setTimeout(() => setFavDone(false), 1500);
+    } catch {
+      /* 忽略 */
+    }
+  }
   const mine = m.role === 'user';
   const reasoning = m.meta?.reasoning;
 
@@ -304,8 +319,8 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
   }, [messages, sending]);
 
   /* 连发：先只存，等你停手了再回 */
-  async function send() {
-    const text = input.trim();
+  async function send(raw) {
+    const text = String(raw != null ? raw : input).trim();
     if (!text || sending) return;
     setInput('');
     setError('');
@@ -464,6 +479,35 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
     }
   }
   /* 听一下他那儿多吵 */
+  /* 语音输入：说一句就发出去 */
+  const stopListenRef = useRef(null);
+
+  function startListening() {
+    if (listening) return;
+    setListening(true);
+    stopListenRef.current = listenStream({
+      onFinal: (text) => {
+        setListening(false);
+        stopListenRef.current = null;
+        if (text && text.trim()) send(text.trim());
+      },
+      onEnd: () => {
+        setListening(false);
+        stopListenRef.current = null;
+      },
+      onError: () => {
+        setListening(false);
+        stopListenRef.current = null;
+      }
+    });
+  }
+
+  function stopListening() {
+    stopListenRef.current?.();
+    stopListenRef.current = null;
+    setListening(false);
+  }
+
   async function hearAmbience() {
     if (ambienting || sending) return;
     setAmbienting(true);
