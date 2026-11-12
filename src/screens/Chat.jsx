@@ -901,9 +901,6 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
         )}
 
         <div className="field">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 5.5v13M5.5 12h13" />
-          </svg>
           <textarea
             ref={inputRef}
             rows={1}
