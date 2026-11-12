@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
-import { api, stickersApi, watchApi, heartbeatApi, pillApi } from '../api.js';
+import { api, stickersApi, watchApi, heartbeatApi, pillApi, favoritesApi } from '../api.js';
 import { speak, stopSpeak, listenSupported, speechSupported } from '../lib/speech.js';
 import { analyzeSong } from '../lib/audio-notes.js';
 import { analyzeSing } from '../lib/sing.js';
@@ -54,9 +54,47 @@ function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAll
       <div className={'msg ' + (mine ? 'me' : 'them')}>
         {showAvatars && !mine && <AvatarImg who="ta" url={avatars.ta} size="s26" />}
         <div className="bubble-stack">
-          {m.content && m.content !== '[表情]' && <div className="bubble">{m.content}</div>}
+          {m.content && m.content !== '[表情]' && (
+            <div
+              className="bubble"
+              onDoubleClick={saveFav}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                saveFav();
+              }}
+              title="双击 / 长按收藏"
+            >
+              {m.content}
+              {favDone && <span className="fav-hint">已收藏</span>}
+            </div>
+          )}
           {m.meta?.sticker && <img className="sticker-msg" src={m.meta.sticker} alt="表情" />}
-          {m.meta?.image && <img className="chat-image" src={m.meta.image} alt="图片" />}
+          {m.meta?.image && (
+            <div className="chat-image-wrap">
+              <img className="chat-image" src={m.meta.image} alt="图片" />
+              <button
+                className="chat-image-fav"
+                onClick={async () => {
+                  try {
+                    const res = await fetch(m.meta.image);
+                    const blob = await res.blob();
+                    const dataUrl = await new Promise((r2) => {
+                      const fr = new FileReader();
+                      fr.onload = () => r2(String(fr.result));
+                      fr.readAsDataURL(blob);
+                    });
+                    await favoritesApi.add({ type: 'image', dataUrl, from: mine ? '我' : 'Elliott' });
+                    setFavDone(true);
+                    setTimeout(() => setFavDone(false), 1500);
+                  } catch {
+                    /* 图片可能已过期 */
+                  }
+                }}
+              >
+                {favDone ? '♥' : '♡'}
+              </button>
+            </div>
+          )}
           {m.meta?.music && (
             <div className="song-card">
               <span className="song-name">🎵 {m.meta.music.fileName || '一首歌'}</span>

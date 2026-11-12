@@ -199,6 +199,17 @@ export const ritualsApi = {
   check: (id) => request('/api/rituals/check', { method: 'POST', body: JSON.stringify({ id }) })
 };
 
+export const favoritesApi = {
+  list: () => request('/api/favorites'),
+  add: (payload) => request('/api/favorites', { method: 'POST', body: JSON.stringify(payload) }),
+  remove: (id) => request('/api/favorites/' + id, { method: 'DELETE' })
+};
+
+export const statusApi = {
+  get: () => request('/api/status'),
+  set: (text, mood) => request('/api/status', { method: 'POST', body: JSON.stringify({ text, mood }) })
+};
+
 export const momentsApi = {
   list: () => request('/api/moments'),
   post: (payload) => request('/api/moments', { method: 'POST', body: JSON.stringify(payload) }),

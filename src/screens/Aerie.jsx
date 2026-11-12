@@ -38,6 +38,11 @@ export default function Aerie({ me, startDate, onGo }) {
       </div>
 
       <div className="list">
+        <div className="list-item" onClick={() => onGo('favorites')}>
+          <span className="t">收藏</span>
+          <span className="v">图片 · 对话</span>
+          <span className="arrow">›</span>
+        </div>
         <div className="list-item" onClick={() => onGo('wallet')}>
           <span className="t">钱包</span>
           <span className="v">{balance === null ? '—' : balance + ' 枚'}</span>

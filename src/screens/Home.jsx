@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 import { daysSince, fmtSince } from '../lib/days.js';
-import { dailyApi } from '../api.js';
+import { dailyApi, statusApi } from '../api.js';
 
 const QUICK = [
   { id: 'watch', label: '一起看', go: null },
@@ -17,10 +17,26 @@ const QUICK = [
 
 export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo }) {
   const [daily, setDaily] = React.useState(null);
+  const [status, setStatus] = React.useState({ me: null, ta: null });
+  const [editing, setEditing] = React.useState(false);
+  const [draft, setDraft] = React.useState('');
 
   React.useEffect(() => {
     dailyApi.get(me).then(setDaily).catch(() => {});
   }, [me]);
+
+  React.useEffect(() => {
+    statusApi.get().then(setStatus).catch(() => {});
+  }, []);
+
+  async function saveStatus() {
+    const t = draft.trim();
+    if (!t) return setEditing(false);
+    const r = await statusApi.set(t).catch(() => null);
+    if (r) setStatus((s) => ({ ...s, me: r.me }));
+    setEditing(false);
+    setDraft('');
+  }
   const days = daysSince(startDate);
   return (
     <>
@@ -46,36 +62,34 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo }) 
 
       <div className="section-label">此刻</div>
       <div className="status-row">
-        <div className="status-card">
+        <div className="status-card" onClick={() => { setEditing(true); setDraft(status.me?.text || ''); }}>
           <div>
             <div className="who">{me}</div>
-            <div className="what">在写日记</div>
+            <div className="what">{status.me?.text || '点一下设置状态'}</div>
           </div>
         </div>
         <div className="status-card">
           <div>
             <div className="who">Elliott</div>
-            <div className="what">在窗边看雨</div>
+            <div className="what">
+              {status.ta ? `${status.ta.doing || '在这待着'}${status.ta.mood ? ' · ' + status.ta.mood : ''}` : '不知道在做什么'}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="section-label">一起</div>
-      <div className="grid-3">
-        {QUICK.map((q) => (
-          <div
-            className="cell"
-            key={q.id}
-            onClick={() => {
-              if (q.go) onGo(q.go);
-              if (q.signal) setTimeout(() => window.dispatchEvent(new Event(q.signal)), 260);
-            }}
-          >
-            <CellIcon id={q.id} />
-            <em>{q.label}</em>
-          </div>
-        ))}
-      </div>
+      {editing && (
+        <div className="fact-add" style={{ marginTop: 8 }}>
+          <input
+            value={draft}
+            autoFocus
+            placeholder="在干什么？（比如：刚洗完澡）"
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && saveStatus()}
+          />
+          <button onClick={saveStatus}>保存</button>
+        </div>
+      )}
 
       <div className="section-label">今日</div>
       <div className="today-row">

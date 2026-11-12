@@ -13,6 +13,7 @@ import Games from './screens/Games.jsx';
 import Reader from './screens/Reader.jsx';
 import Wallet from './screens/Wallet.jsx';
 import Moments from './screens/Moments.jsx';
+import Favorites from './screens/Favorites.jsx';
 import Slots from './screens/Slots.jsx';
 import Lock from './components/Lock.jsx';
 import InstallHint from './components/InstallHint.jsx';
@@ -74,7 +75,7 @@ export default function App() {
       alive = false;
     };
   }, []);
-  const KNOWN = ['object', 'home', 'chat', 'read', 'wallet', 'moments', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games', 'call'];
+  const KNOWN = ['object', 'home', 'chat', 'read', 'wallet', 'moments', 'favorites', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games', 'call'];
   const [screen, setScreen] = useState(() => {
     const h = (window.location.hash || '').replace('#', '');
     return KNOWN.includes(h) && h !== 'object' ? h : 'opening';
@@ -266,6 +267,10 @@ export default function App() {
       album: <Album onGo={setScreen} />,
       mail: <Mail me={me} onGo={setScreen} />,
       games: <Games onGo={setScreen} />,
+      read: <Reader onGo={setScreen} />,
+      wallet: <Wallet onGo={setScreen} />,
+      moments: <Moments onGo={setScreen} me={me} />,
+      favorites: <Favorites onGo={setScreen} />,
       settings: (
         <Settings
           settings={settings}
