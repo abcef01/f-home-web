@@ -2,6 +2,7 @@
 import { api, stickersApi, watchApi, heartbeatApi, pillApi } from '../api.js';
 import { speak, stopSpeak, listenSupported, speechSupported } from '../lib/speech.js';
 import { analyzeSong } from '../lib/audio-notes.js';
+import { analyzeSing } from '../lib/sing.js';
 import { refreshLocation } from '../lib/place.js';
 import { listenAmbience } from '../lib/ambience.js';
 import AvatarImg from '../components/AvatarImg.jsx';
@@ -442,6 +443,59 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
       setAmbienting(false);
     }
   }
+  /* 唱一段：录 20 秒，量音高，再发给他 */
+  const [recording, setRecording] = useState(false);
+  const [recSecs, setRecSecs] = useState(0);
+  const singRecRef = useRef(null);
+  const singChunksRef = useRef([]);
+  const singTimerRef = useRef(null);
+
+  async function toggleSing() {
+    if (recording) {
+      singRecRef.current?.stop();
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const rec = new MediaRecorder(stream);
+      singRecRef.current = rec;
+      singChunksRef.current = [];
+
+      rec.ondataavailable = (e) => e.data.size && singChunksRef.current.push(e.data);
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        if (singTimerRef.current) clearInterval(singTimerRef.current);
+        setRecording(false);
+        setRecSecs(0);
+
+        const blob = new Blob(singChunksRef.current, { type: 'audio/webm' });
+        try {
+          const buf = await blob.arrayBuffer();
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const audio = await ctx.decodeAudioData(buf);
+          await ctx.close().catch(() => {});
+          const meta = analyzeSing(audio.getChannelData(0), audio.sampleRate, { maxSeconds: 30 });
+          const res = await api.chat({ conversationId: convId, message: '（唱了一段）', sing: meta });
+          setConvId(res.conversationId);
+          setMessages((m) => [...m, res.userMessage]);
+          appendReplies(res.replies && res.replies.length ? res.replies : [res.reply]);
+        } catch (e) {
+          setError('这段没录好：' + (e.message || ''));
+        }
+      };
+
+      rec.start();
+      setRecording(true);
+      setRecSecs(0);
+      singTimerRef.current = setInterval(() => setRecSecs((n) => n + 1), 1000);
+      setTimeout(() => {
+        if (singRecRef.current?.state === 'recording') singRecRef.current.stop();
+      }, 20000);
+    } catch (e) {
+      alert('打不开麦克风：' + (e.message || ''));
+    }
+  }
+
   /* 首页「一起听」进来时，直接打开选歌（跟聊天里点 ♪ 一样） */
   useEffect(() => {
     const open = () => musicRef.current?.click();
