@@ -26,16 +26,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: 装依赖
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: 构建前端
         run: npm run build
 
       - name: 同步到 Android 工程
-        run: npx cap sync android
+        run: |
+          set -e
+          echo "node $(node -v) / npm $(npm -v)"
+          rm -rf android/app/src/main/assets/public
+          mkdir -p android/app/src/main/assets/public
+          cp -r dist/. android/app/src/main/assets/public/
+          cp capacitor.config.json android/app/src/main/assets/capacitor.config.json
+          echo "assets: $(find android/app/src/main/assets/public -type f | wc -l) 个文件"
 
       - name: 装 JDK 21
         uses: actions/setup-java@v4
