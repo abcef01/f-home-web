@@ -45,6 +45,17 @@ jobs:
 
       - name: 装 Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0 platform-tools'
+
+      - name: Gradle 缓存
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('android/**/*.gradle*', 'android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-
 
       - name: 编译 APK
         working-directory: android
