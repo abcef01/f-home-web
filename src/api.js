@@ -204,7 +204,9 @@ export const walletApi = {
   transfer: (amount, note) => request('/api/wallet/transfer', { method: 'POST', body: JSON.stringify({ amount, note }) }),
   wish: (payload) => request('/api/wallet/wish', { method: 'POST', body: JSON.stringify(payload) }),
   ideate: () => request('/api/wallet/ideate', { method: 'POST', body: '{}' }),
-  pay: (id) => request('/api/wallet/pay', { method: 'POST', body: JSON.stringify({ id }) }),
+  shop: () => request('/api/wallet/shop'),
+  buy: (id) => request('/api/wallet/buy', { method: 'POST', body: JSON.stringify({ id }) }),
+  pay: (id, price) => request('/api/wallet/pay', { method: 'POST', body: JSON.stringify({ id, price }) }),
   reject: (id) => request('/api/wallet/reject', { method: 'POST', body: JSON.stringify({ id }) })
 };
 

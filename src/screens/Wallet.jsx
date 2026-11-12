@@ -8,9 +8,12 @@ export default function Wallet({ onGo }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [msg, setMsg] = useState('');
+  const [shop, setShop] = useState([]);
+  const [payInput, setPayInput] = useState({});
 
   useEffect(() => {
     walletApi.get().then(setData).catch((e) => setErr(e.message));
+    walletApi.shop().then((r) => setShop(r.items || [])).catch(() => {});
   }, []);
 
   async function run(fn, okMsg) {
@@ -94,13 +97,22 @@ export default function Wallet({ onGo }) {
                 搜一下 →
               </a>
             )}
+            <div className="wish-pay">
+              <span>实付</span>
+              <input
+                value={payInput[w.id] ?? w.price}
+                inputMode="numeric"
+                onChange={(e) => setPayInput((p) => ({ ...p, [w.id]: e.target.value }))}
+              />
+              <span>枚（他估 {w.price}，你看着改）</span>
+            </div>
             <div className="wish-actions">
               <button
                 className="reader-btn"
-                disabled={busy || data.balance < w.price}
-                onClick={() => run(() => walletApi.pay(w.id), '买了')}
+                disabled={busy || data.balance < Number(payInput[w.id] ?? w.price)}
+                onClick={() => run(() => walletApi.pay(w.id, Number(payInput[w.id] ?? w.price)), '买了')}
               >
-                {data.balance < w.price ? '余额不够' : '我付了'}
+                {data.balance < Number(payInput[w.id] ?? w.price) ? '余额不够' : '我付了'}
               </button>
               <button className="reader-btn" disabled={busy} onClick={() => run(() => walletApi.reject(w.id), '先不买')}>
                 不买
@@ -120,6 +132,27 @@ export default function Wallet({ onGo }) {
             ))}
           </>
         )}
+
+        <div className="section-label">他能给自己买</div>
+        <div className="hint-line">都是虚拟的，但每样都真的有用。</div>
+        <div className="shop-grid">
+          {shop.map((it) => (
+            <div className="shop-card" key={it.id}>
+              <div className="shop-head">
+                <b>{it.name}</b>
+                <span>{it.price} 枚</span>
+              </div>
+              <div className="shop-desc">{it.desc}</div>
+              <button
+                className="reader-btn"
+                disabled={busy || data.balance < it.price}
+                onClick={() => run(() => walletApi.buy(it.id), '买了「' + it.name + '」')}
+              >
+                {data.balance < it.price ? '余额不够' : '替他买'}
+              </button>
+            </div>
+          ))}
+        </div>
 
         <div className="section-label">流水</div>
         <div className="wallet-ledger">
