@@ -1,9 +1,14 @@
 package app.home.bunny;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -24,6 +29,8 @@ public class NotifierPlugin extends Plugin {
             return;
         }
 
+        requestNotifyPermission();
+
         SharedPreferences p = getContext().getSharedPreferences("home", Context.MODE_PRIVATE);
         p.edit().putString("base", base).putString("token", token).apply();
 
@@ -34,6 +41,22 @@ public class NotifierPlugin extends Plugin {
         JSObject ret = new JSObject();
         ret.put("running", true);
         call.resolve(ret);
+    }
+
+    /* Android 13+ 通知要单独申请 */
+    private void requestNotifyPermission() {
+        if (Build.VERSION.SDK_INT < 33) return;
+        try {
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        getActivity(),
+                        new String[]{ Manifest.permission.POST_NOTIFICATIONS },
+                        9101
+                );
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     @PluginMethod
