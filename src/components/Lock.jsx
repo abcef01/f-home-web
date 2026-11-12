@@ -51,6 +51,11 @@ export default function Lock({ onUnlock }) {
 
         {err && <div className="lock-err">{err}</div>}
         <div className="lock-note">口令只存在后端，别人拿到网址也进不来。</div>
+        {typeof __BUILD__ !== 'undefined' && (
+          <div style={{ marginTop: 22, fontSize: 9, color: 'var(--muted)', letterSpacing: '0.06em' }}>
+            构建 {__BUILD__}
+          </div>
+        )}
       </div>
     </div>
   );
