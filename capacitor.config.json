@@ -1,0 +1,11 @@
+﻿{
+  "appId": "app.home.bunny",
+  "appName": "Home",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
