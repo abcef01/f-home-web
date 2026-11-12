@@ -19,6 +19,8 @@ export default function Call({ voice = {}, onClose }) {
   const [err, setErr] = useState('');
   const [cameraOn, setCameraOn] = useState(false);
   const [frameNote, setFrameNote] = useState('');
+  const [frameEvery, setFrameEvery] = useState(5);
+  const [frameMode, setFrameMode] = useState('frame'); // frame | stream
 
   const recRef = useRef(null);
   const audioCtxRef = useRef(null);
@@ -48,13 +50,13 @@ export default function Call({ voice = {}, onClose }) {
     const v = videoRef.current;
     if (!v || !v.videoWidth) return;
     const canvas = document.createElement('canvas');
-    const w = 480;
+    const w = frameMode === 'stream' ? 320 : 480;
     const h = Math.round((v.videoHeight / v.videoWidth) * w);
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(v, 0, 0, w, h);
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+    const dataUrl = canvas.toDataURL('image/jpeg', frameMode === 'stream' ? 0.5 : 0.7);
 
     callFrameApi
       .send(dataUrl)
@@ -80,13 +82,20 @@ export default function Call({ voice = {}, onClose }) {
         }
       });
       setTimeout(grabFrame, 1200);
-      frameTimer.current = setInterval(grabFrame, 20000);
+      frameTimer.current = setInterval(grabFrame, Math.max(1.5, frameEvery) * 1000);
     } catch (e) {
       setErr('打不开摄像头：' + (e.message || ''));
     }
   }
 
   useEffect(() => () => stopCamera(), []);
+
+  /* 改间隔/模式：重设定时器 */
+  useEffect(() => {
+    if (!cameraOn) return;
+    if (frameTimer.current) clearInterval(frameTimer.current);
+    frameTimer.current = setInterval(grabFrame, Math.max(1.5, frameEvery) * 1000);
+  }, [frameEvery, frameMode]);
 
   /* 响铃：两声回铃音，然后接通 */
   useEffect(() => {
@@ -284,6 +293,26 @@ export default function Call({ voice = {}, onClose }) {
           {phase === 'done' && '已挂断'}
         </div>
       </div>
+
+      {cameraOn && (
+        <div className="call-cam-settings">
+          <div className="ccs-row">
+            <button className={frameMode === 'frame' ? 'on' : ''} onClick={() => setFrameMode('frame')}>
+              帧
+            </button>
+            <button className={frameMode === 'stream' ? 'on' : ''} onClick={() => setFrameMode('stream')}>
+              视频流
+            </button>
+          </div>
+          <div className="ccs-row">
+            {[2, 5, 10, 20].map((n) => (
+              <button key={n} className={frameEvery === n ? 'on' : ''} onClick={() => setFrameEvery(n)}>
+                {n}s
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {cameraOn && (
         <div className="call-cam">

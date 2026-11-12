@@ -1,5 +1,6 @@
 ﻿import { fishingApi, monoApi, farmApi, burgerApi, pondApi, api } from '../api.js';
 import Slots from './Slots.jsx';
+import { GomokuPanel, TicTacToePanel, RpsPanel, TruthDarePanel, DrawGuessPanel } from '../components/MiniGames.jsx';
 import React, { useEffect, useRef, useState } from 'react';
 
 const GAMES = [
@@ -356,6 +357,11 @@ export default function Games({ onGo }) {
   const [farmOpen, setFarmOpen] = useState(false);
   const [burgerOpen, setBurgerOpen] = useState(false);
   const [pondOpen, setPondOpen] = useState(false);
+  const [gomokuOpen, setGomokuOpen] = useState(false);
+  const [tttOpen, setTttOpen] = useState(false);
+  const [rpsOpen, setRpsOpen] = useState(false);
+  const [tdOpen, setTdOpen] = useState(false);
+  const [drawOpen, setDrawOpen] = useState(false);
 
   /* 把渔获丢进聊天，让它接一句 */
   async function tell(out) {
@@ -378,6 +384,46 @@ export default function Games({ onGo }) {
       </div>
 
       <div className="game-grid">
+
+        <div className={'game-card' + (gomokuOpen ? ' open' : '')} onClick={() => setGomokuOpen((v) => !v)}>
+          <span className="g-ico">⚫</span>
+          <div>
+            <div className="g-name">五子棋</div>
+            <div className="g-meta">{gomokuOpen ? '收起' : '13 路 · 你执黑'}</div>
+          </div>
+        </div>
+
+        <div className={'game-card' + (tttOpen ? ' open' : '')} onClick={() => setTttOpen((v) => !v)}>
+          <span className="g-ico">＃</span>
+          <div>
+            <div className="g-name">井字棋</div>
+            <div className="g-meta">{tttOpen ? '收起' : '他会算'}</div>
+          </div>
+        </div>
+
+        <div className={'game-card' + (rpsOpen ? ' open' : '')} onClick={() => setRpsOpen((v) => !v)}>
+          <span className="g-ico">✌</span>
+          <div>
+            <div className="g-name">石头剪刀布</div>
+            <div className="g-meta">{rpsOpen ? '收起' : '运气游戏'}</div>
+          </div>
+        </div>
+
+        <div className={'game-card' + (tdOpen ? ' open' : '')} onClick={() => setTdOpen((v) => !v)}>
+          <span className="g-ico">♡</span>
+          <div>
+            <div className="g-name">真心话大冒险</div>
+            <div className="g-meta">{tdOpen ? '收起' : '抽一张，不许换'}</div>
+          </div>
+        </div>
+
+        <div className={'game-card' + (drawOpen ? ' open' : '')} onClick={() => setDrawOpen((v) => !v)}>
+          <span className="g-ico">✎</span>
+          <div>
+            <div className="g-name">你画我猜</div>
+            <div className="g-meta">{drawOpen ? '收起' : '他看图猜'}</div>
+          </div>
+        </div>
 
 
         <div className={'game-card' + (slotOpen ? ' open' : '')} onClick={() => setSlotOpen((v) => !v)}>
@@ -439,23 +485,17 @@ export default function Games({ onGo }) {
         ))}
       </div>
 
+      {gomokuOpen && <GomokuPanel onTell={tell} />}
+      {tttOpen && <TicTacToePanel onTell={tell} />}
+      {rpsOpen && <RpsPanel onTell={tell} />}
+      {tdOpen && <TruthDarePanel onTell={tell} />}
+      {drawOpen && <DrawGuessPanel onTell={tell} />}
       {slotOpen && <Slots />}
       {pondOpen && <PondPanel />}
       {burgerOpen && <BurgerPanel />}
       {farmOpen && <FarmPanel />}
       {monoOpen && <MonoPanel />}
       {fishOpen && <FishingPanel onTell={tell} />}
-
-      <div className="section-label">4399</div>
-      <div className="portal">
-        <div className="p-title">4399 小游戏</div>
-        <p className="p-desc">4399 禁止被别的网站内嵌，所以只能外链过去，不能直接放进来。</p>
-      </div>
-      <div className="write-row" style={{ marginTop: 14 }}>
-        <button className="write-btn" onClick={() => window.open('https://www.4399.com', '_blank', 'noopener')}>
-          打开 4399
-        </button>
-      </div>
       <div style={{ height: 24 }} />
     </>
   );

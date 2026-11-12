@@ -199,6 +199,10 @@ export const ritualsApi = {
   check: (id) => request('/api/rituals/check', { method: 'POST', body: JSON.stringify({ id }) })
 };
 
+export const drawApi = {
+  guess: (image) => request('/api/vision/guess', { method: 'POST', body: JSON.stringify({ image }) })
+};
+
 export const dailyApi = {
   get: (me) => request('/api/daily' + (me ? '?me=' + encodeURIComponent(me) : ''))
 };

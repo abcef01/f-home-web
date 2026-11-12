@@ -3165,3 +3165,61 @@ body::before {
   color: #fff; background: rgba(0,0,0,0.55);
 }
 .call-btn.on { background: var(--ink); color: var(--paper); }
+
+
+/* 五子棋 */
+.g5-board {
+  display: grid; grid-template-columns: repeat(13, 1fr);
+  gap: 1px; background: var(--line-2); padding: 4px; border-radius: 2px; margin: 10px 0;
+  max-width: 340px;
+}
+.g5-cell { aspect-ratio: 1; background: var(--paper); position: relative; cursor: pointer; }
+.g5-cell.p1::after, .g5-cell.p2::after {
+  content: ''; position: absolute; inset: 12%; border-radius: 50%;
+}
+.g5-cell.p1::after { background: #2d2a24; }
+.g5-cell.p2::after { background: #b8b2a4; }
+
+/* 井字棋 */
+.ttt-board {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+  background: var(--line-2); width: 220px; margin: 10px auto;
+}
+.ttt-cell {
+  aspect-ratio: 1; background: var(--paper); display: flex; align-items: center; justify-content: center;
+  font-size: 30px; color: var(--ink); cursor: pointer;
+}
+.ttt-cell.p2 { color: var(--ink-3); }
+
+/* 石头剪刀布 */
+.rps-row { display: flex; gap: 8px; margin: 10px 0; }
+.rps-btn {
+  flex: 1; padding: 16px 0; border: 1px solid var(--line-2); border-radius: 2px;
+  background: transparent; color: var(--ink); cursor: pointer; font-family: var(--font-ui); font-size: 13px;
+}
+.rps-result { font-size: 12.5px; color: var(--ink-2); margin-top: 8px; }
+
+/* 真心话大冒险 */
+.td-card { border: 1px solid var(--line); border-radius: 2px; padding: 12px 14px; margin-top: 10px; }
+.td-kind { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; }
+.td-text { margin-top: 6px; font-size: 13.5px; line-height: 1.8; color: var(--ink); }
+
+/* 你画我猜 */
+.draw-canvas {
+  width: 100%; max-width: 520px; aspect-ratio: 520 / 360;
+  border: 1px solid var(--line); border-radius: 2px; touch-action: none; cursor: crosshair; display: block;
+}
+
+
+/* 通话：画面模式 */
+.call-cam-settings {
+  position: absolute; left: 14px; top: 64px; z-index: 5;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.ccs-row { display: flex; gap: 4px; }
+.ccs-row button {
+  border: 1px solid rgba(255,255,255,0.35); background: rgba(0,0,0,0.35);
+  color: #fff; font-family: var(--font-ui); font-size: 10px;
+  padding: 4px 8px; border-radius: 2px; cursor: pointer;
+}
+.ccs-row button.on { background: #fff; color: #222; border-color: #fff; }
