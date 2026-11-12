@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { momentsApi } from '../api.js';
+import { momentsApi, unreadApi } from '../api.js';
 
 export default function Moments({ onGo, me = 'Bunny' }) {
   const [list, setList] = useState([]);
@@ -13,6 +13,7 @@ export default function Moments({ onGo, me = 'Bunny' }) {
 
   useEffect(() => {
     momentsApi.list().then((r) => setList(r.moments || [])).catch((e) => setErr(e.message));
+    unreadApi.markRead('moments').catch(() => {});
   }, []);
 
   function pick(e) {

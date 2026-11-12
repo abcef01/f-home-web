@@ -199,6 +199,11 @@ export const ritualsApi = {
   check: (id) => request('/api/rituals/check', { method: 'POST', body: JSON.stringify({ id }) })
 };
 
+export const unreadApi = {
+  get: () => request('/api/unread'),
+  markRead: (section) => request('/api/reads/' + section, { method: 'POST', body: '{}' })
+};
+
 export const readingsApi = {
   list: () => request('/api/readings'),
   make: (kind, input, question) => request('/api/readings', { method: 'POST', body: JSON.stringify({ kind, input, question }) }),

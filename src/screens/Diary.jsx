@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
-import { diaryApi } from '../api.js';
+import { diaryApi, unreadApi } from '../api.js';
 import AvatarImg from '../components/AvatarImg.jsx';
 
 const WEEK_WD = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -26,6 +26,12 @@ export default function Diary({ me, avatars = {}, showAvatars = true, onGo }) {
   const [noteText, setNoteText] = useState('');
 
   const today = dayKey();
+
+  /* 打开就算看过了 */
+  useEffect(() => {
+    unreadApi.markRead('diary').catch(() => {});
+    unreadApi.markRead('notes').catch(() => {});
+  }, []);
 
   useEffect(() => {
     diaryApi

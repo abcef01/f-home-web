@@ -18,7 +18,7 @@ import Reading from './screens/Reading.jsx';
 import Slots from './screens/Slots.jsx';
 import Lock from './components/Lock.jsx';
 import InstallHint from './components/InstallHint.jsx';
-import { authApi, uiSettings, avatarsApi, drivesApi } from './api.js';
+import { authApi, uiSettings, avatarsApi, drivesApi, unreadApi } from './api.js';
 import { startDeviceReporting } from './lib/device.js';
 import { takeSharedImage } from './lib/share.js';
 import { startLocationSync } from './lib/place.js';
@@ -229,6 +229,20 @@ export default function App() {
     else r.style.removeProperty('--bg-chat');
   }, [settings]);
 
+  const [unread, setUnread] = React.useState({ diary: 0, notes: 0, moments: 0 });
+
+  React.useEffect(() => {
+    if (authState !== 'ok') return;
+    let alive = true;
+    const load = () => unreadApi.get().then((u) => alive && setUnread(u)).catch(() => {});
+    load();
+    const t = setInterval(load, 45000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, [authState, screen]);
+
   const chatGlass = settings.surface !== 'paper';
   const me = settings.me || 'Bunny';
   const homeTitle = settings.homeTitle || `${me}'s Home`;
@@ -317,7 +331,7 @@ export default function App() {
           </section>
         )}
 
-        {isTab && <TabBar tabs={tabs} current={screen} onGo={setScreen} />}
+        {isTab && <TabBar tabs={tabs} current={screen} onGo={setScreen} unread={unread} />}
       </div>
 
       <aside className="legend">
@@ -365,7 +379,7 @@ function StatusBar({ dark }) {
   );
 }
 
-export function TabBar({ tabs, current, onGo }) {
+export function TabBar({ tabs, current, onGo, unread = {} }) {
   const icons = {
     home: <path d="M4 11 12 4.5l8 6.5v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8Z" />,
     chat: <path d="M20.5 12.2c0 4-3.8 7.2-8.5 7.2-1 0-2-.1-2.9-.4L4 20.5l1.1-3.4A6.9 6.9 0 0 1 3.5 12.2C3.5 8.2 7.3 5 12 5s8.5 3.2 8.5 7.2Z" />,
@@ -398,7 +412,10 @@ export function TabBar({ tabs, current, onGo }) {
           onClick={() => onGo(t.id)}
         >
           <svg viewBox="0 0 24 24">{icons[t.id]}</svg>
-          <span>{t.label}</span>
+          <span>
+            {t.label}
+            {t.id === 'diary' && (unread.diary || 0) + (unread.notes || 0) > 0 && <i className="tab-dot" />}
+          </span>
         </button>
       ))}
     </nav>

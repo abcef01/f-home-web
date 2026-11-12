@@ -3316,3 +3316,12 @@ body::before {
 }
 .reading-row span { color: var(--muted); font-size: 10px; width: 30px; }
 .reading-row b { font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+
+/* 未读红点 */
+.tab-dot, .cell-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: #c4553f; margin-left: 4px; vertical-align: super;
+}
+.cell-dot { position: absolute; top: 10px; right: 12px; margin: 0; }
+.cell { position: relative; }

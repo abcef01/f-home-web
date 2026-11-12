@@ -105,9 +105,9 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(payload.title || 'Elliott', {
       body: payload.body || '给你留了一句话',
-      icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
-      tag: 'bunny-message',
+      icon: payload.icon || '/icons/icon-192.png',
+      badge: payload.icon || '/icons/icon-192.png',
+      tag: payload.tag || 'bunny-message',
       renotify: true,
       data: { url: payload.url || '/#chat' }
     })
