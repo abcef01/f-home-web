@@ -15,6 +15,7 @@ import Wallet from './screens/Wallet.jsx';
 import Moments from './screens/Moments.jsx';
 import Favorites from './screens/Favorites.jsx';
 import Reading from './screens/Reading.jsx';
+import Study from './screens/Study.jsx';
 import Slots from './screens/Slots.jsx';
 import Lock from './components/Lock.jsx';
 import InstallHint from './components/InstallHint.jsx';
@@ -76,7 +77,7 @@ export default function App() {
       alive = false;
     };
   }, []);
-  const KNOWN = ['object', 'home', 'chat', 'read', 'wallet', 'moments', 'favorites', 'reading', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games', 'call'];
+  const KNOWN = ['object', 'home', 'chat', 'read', 'wallet', 'moments', 'favorites', 'reading', 'study', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games', 'call'];
   const [screen, setScreen] = useState(() => {
     const h = (window.location.hash || '').replace('#', '');
     return KNOWN.includes(h) && h !== 'object' ? h : 'opening';
@@ -277,7 +278,7 @@ export default function App() {
         />
       ),
       diary: <Diary me={me} onGo={setScreen} />,
-      aerie: <Aerie me={me} startDate={settings.startDate} avatarUrl={avatars.ta} onGo={setScreen} />,
+      aerie: <Aerie me={me} startDate={settings.startDate} avatarUrl={avatars.ta} onGo={setScreen} unread={unread} />,
       rituals: <Rituals startDate={settings.startDate} onGo={setScreen} />,
       album: <Album onGo={setScreen} />,
       mail: <Mail me={me} onGo={setScreen} />,
@@ -287,6 +288,7 @@ export default function App() {
       moments: <Moments onGo={setScreen} me={me} />,
       favorites: <Favorites onGo={setScreen} />,
       reading: <Reading onGo={setScreen} />,
+      study: <Study onGo={setScreen} />,
       settings: (
         <Settings
           settings={settings}

@@ -3325,3 +3325,28 @@ body::before {
 }
 .cell-dot { position: absolute; top: 10px; right: 12px; margin: 0; }
 .cell { position: relative; }
+
+
+/* 陪我学 */
+.study-body { flex: 1; overflow-y: auto; padding: 22px 20px 40px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.study-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 20px; }
+.study-running { background: var(--paper); }
+.study-name { font-size: 13px; color: var(--ink-2); letter-spacing: 0.06em; }
+.study-clock {
+  font-size: 54px; font-variant-numeric: tabular-nums; color: var(--ink);
+  letter-spacing: 0.04em; font-weight: 300;
+}
+.study-line { font-size: 13px; color: var(--ink-2); line-height: 1.9; max-width: 300px; text-align: center; }
+.study-btn {
+  padding: 14px 46px; border: 0; border-radius: 3px; background: var(--ink); color: var(--paper);
+  font-family: var(--font-ui); font-size: 13px; letter-spacing: 0.2em; cursor: pointer;
+}
+.study-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; max-width: 420px; margin-top: 20px; }
+.study-stat { border: 1px solid var(--line); border-radius: 2px; padding: 14px; text-align: center; }
+.study-stat b { display: block; font-size: 24px; font-weight: 400; color: var(--ink); }
+.study-stat span { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; }
+.study-history { width: 100%; max-width: 420px; margin-top: 18px; }
+.study-row { display: flex; gap: 10px; align-items: baseline; padding: 9px 0; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--ink-2); }
+.study-row span:first-child { width: 44px; color: var(--muted); }
+.study-row b { flex: 1; font-weight: 400; }
+.study-row span:last-child { color: var(--ink-3); }

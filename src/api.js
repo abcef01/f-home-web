@@ -199,6 +199,13 @@ export const ritualsApi = {
   check: (id) => request('/api/rituals/check', { method: 'POST', body: JSON.stringify({ id }) })
 };
 
+export const studyApi = {
+  get: () => request('/api/study'),
+  start: (name) => request('/api/study/start', { method: 'POST', body: JSON.stringify({ name }) }),
+  end: (id, seconds) => request('/api/study/end', { method: 'POST', body: JSON.stringify({ id, seconds }) }),
+  encourage: (name, minutes) => request('/api/study/encourage', { method: 'POST', body: JSON.stringify({ name, minutes }) })
+};
+
 export const unreadApi = {
   get: () => request('/api/unread'),
   markRead: (section) => request('/api/reads/' + section, { method: 'POST', body: '{}' })

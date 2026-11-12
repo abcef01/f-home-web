@@ -2,7 +2,7 @@
 import { walletApi } from '../api.js';
 import { daysSince } from '../lib/days.js';
 
-export default function Aerie({ me, startDate, onGo }) {
+export default function Aerie({ me, startDate, onGo, unread = {} }) {
   const [balance, setBalance] = useState(null);
   useEffect(() => {
     walletApi.get().then((r) => setBalance(r.balance)).catch(() => {});
@@ -39,7 +39,7 @@ export default function Aerie({ me, startDate, onGo }) {
 
       <div className="list">
         <div className="list-item" onClick={() => onGo('favorites')}>
-          <span className="t">收藏</span>
+          <span className="t">收藏{unread?.favorites ? <i className="tab-dot" /> : null}</span>
           <span className="v">图片 · 对话</span>
           <span className="arrow">›</span>
         </div>

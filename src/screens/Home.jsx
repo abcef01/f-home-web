@@ -3,15 +3,15 @@ import { daysSince, fmtSince } from '../lib/days.js';
 import { dailyApi, statusApi } from '../api.js';
 
 const QUICK = [
-  { id: 'watch', label: '一起看', go: null },
+  { id: 'study', label: '陪我学', go: 'study' },
   { id: 'listen', label: '一起听', go: 'chat', signal: 'bunny-open-song' },
-  { id: 'read', label: '书架', go: 'read' },
+  { id: 'read', label: '书架', go: 'read', dot: !!unread?.books },
   { id: 'mail', label: '信箱', go: 'mail' },
   { id: 'album', label: '相册', go: 'album' },
   { id: 'moments', label: '朋友圈', go: 'moments', dot: !!unread?.moments },
   { id: 'reading', label: '解读', go: 'reading' },
   { id: 'games', label: '一起玩', go: 'games' },
-  { id: 'rituals', label: '日常', go: 'rituals' },
+  { id: 'rituals', label: '日常', go: 'rituals', dot: !!unread?.quests },
   { id: 'memory', label: '记忆', go: 'aerie' }
 ];
 
