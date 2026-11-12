@@ -3092,3 +3092,5 @@ body::before {
 .ledger-line b { font-weight: 500; }
 .ledger-line b.plus { color: #4d7a52; }
 .ledger-line b.minus { color: #a4563f; }
+
+.wish-for { margin-top: 4px; font-size: 10px; color: var(--muted); letter-spacing: 0.08em; }

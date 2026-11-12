@@ -75,8 +75,11 @@ export default function Wallet({ onGo }) {
           </button>
         </div>
 
-        <div className="section-label">他想要</div>
-        {wanted.length === 0 && <div className="hint-line">现在没有想要的。他会在聊天里提。</div>}
+        <div className="section-label">他想给你买</div>
+        <button className="reader-btn" style={{ marginBottom: 10 }} disabled={busy} onClick={() => run(() => walletApi.ideate(), '他挑了')}>
+          让他挑一样
+        </button>
+        {wanted.length === 0 && <div className="hint-line">现在没有想买的。他会在聊天里提——钱只能花在你身上，或者你们一起用的东西上。</div>}
 
         {wanted.map((w) => (
           <div className="wish-card" key={w.id}>
@@ -84,6 +87,7 @@ export default function Wallet({ onGo }) {
               <b>{w.name}</b>
               <span>{w.price} 枚</span>
             </div>
+            <div className="wish-for">{w.forWho === 'us' ? '给我们' : '给你'}</div>
             {w.reason && <div className="wish-reason">{w.reason}</div>}
             {w.url && (
               <a className="wish-link" href={w.url} target="_blank" rel="noopener noreferrer">
