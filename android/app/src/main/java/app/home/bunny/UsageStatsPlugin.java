@@ -1,6 +1,7 @@
 package app.home.bunny;
 
 import android.app.AppOpsManager;
+import android.app.usage.UsageEvents;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
@@ -55,6 +56,51 @@ public class UsageStatsPlugin extends Plugin {
             call.resolve();
         } catch (Exception e) {
             call.reject("打不开设置：" + e.getMessage());
+        }
+    }
+
+    /* 现在正在用的 App */
+    @PluginMethod
+    public void current(PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("granted", hasAccess());
+
+        if (!hasAccess()) {
+            call.resolve(ret);
+            return;
+        }
+
+        try {
+            long now = System.currentTimeMillis();
+            UsageStatsManager usm = (UsageStatsManager) getContext().getSystemService(Context.USAGE_STATS_SERVICE);
+            UsageEvents events = usm.queryEvents(now - 10 * 60 * 1000L, now);
+
+            String lastPkg = null;
+            long lastAt = 0;
+            UsageEvents.Event e = new UsageEvents.Event();
+            while (events != null && events.hasNextEvent()) {
+                events.getNextEvent(e);
+                if (e.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                    lastPkg = e.getPackageName();
+                    lastAt = e.getTimeStamp();
+                }
+            }
+
+            if (lastPkg != null) {
+                String label = lastPkg;
+                try {
+                    PackageManager pm = getContext().getPackageManager();
+                    label = pm.getApplicationLabel(pm.getApplicationInfo(lastPkg, 0)).toString();
+                } catch (Exception ignored) {
+                }
+                ret.put("pkg", lastPkg);
+                ret.put("label", label);
+                ret.put("at", lastAt);
+            }
+
+            call.resolve(ret);
+        } catch (Exception err) {
+            call.reject("读取失败：" + err.getMessage());
         }
     }
 

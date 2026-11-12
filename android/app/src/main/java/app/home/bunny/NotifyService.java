@@ -6,7 +6,12 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
+import android.app.AppOpsManager;
+import android.app.usage.UsageEvents;
+import android.app.usage.UsageStatsManager;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Process;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
@@ -64,6 +69,7 @@ public class NotifyService extends Service {
                 new Thread(() -> {
                     try {
                         pollOnce();
+                        reportCurrentApp();
                     } catch (Exception ignored) {
                     }
                 }).start();
@@ -115,6 +121,59 @@ public class NotifyService extends Service {
         } catch (Exception ignored) {
         } finally {
             if (conn != null) conn.disconnect();
+        }
+    }
+
+    /* 每分钟告诉服务器：他现在正在用哪个 App */
+    private void reportCurrentApp() {
+        String base = prefs().getString("base", "");
+        String token = prefs().getString("token", "");
+        if (base == null || base.isEmpty() || token == null || token.isEmpty()) return;
+
+        try {
+            AppOpsManager ops = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+            int mode = ops.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), getPackageName());
+            if (mode != AppOpsManager.MODE_ALLOWED) return;
+
+            long now = System.currentTimeMillis();
+            UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+            UsageEvents events = usm.queryEvents(now - 10 * 60 * 1000L, now);
+
+            String lastPkg = null;
+            long lastAt = 0;
+            UsageEvents.Event e = new UsageEvents.Event();
+            while (events != null && events.hasNextEvent()) {
+                events.getNextEvent(e);
+                if (e.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                    lastPkg = e.getPackageName();
+                    lastAt = e.getTimeStamp();
+                }
+            }
+            if (lastPkg == null) return;
+
+            String label = lastPkg;
+            try {
+                PackageManager pm = getPackageManager();
+                label = pm.getApplicationLabel(pm.getApplicationInfo(lastPkg, 0)).toString();
+            } catch (Exception ignored) {
+            }
+
+            JSONObject body = new JSONObject();
+            body.put("label", label);
+            body.put("pkg", lastPkg);
+            body.put("at", lastAt);
+
+            HttpURLConnection conn = (HttpURLConnection) new URL(base + "/api/device/current").openConnection();
+            conn.setConnectTimeout(12000);
+            conn.setReadTimeout(12000);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            conn.setDoOutput(true);
+            conn.getOutputStream().write(body.toString().getBytes("UTF-8"));
+            conn.getResponseCode();
+            conn.disconnect();
+        } catch (Exception ignored) {
         }
     }
 

@@ -17,6 +17,7 @@ export default function Phone({ onGo }) {
   const [health, setHealth] = useState(null);
   const [healthBusy, setHealthBusy] = useState(false);
   const [healthMsg, setHealthMsg] = useState('');
+  const [currentNow, setCurrentNow] = useState(null);
 
   const inApp = nativeUsage.available();
 
@@ -31,6 +32,7 @@ export default function Phone({ onGo }) {
       .then((r) => setOk(!!r.granted))
       .catch(() => setOk(false));
     nativeNotifier.status().then((r) => setNotify(!!r.hasToken)).catch(() => {});
+    nativeUsage.current?.().then((r) => setCurrentNow(r?.label ? r : null)).catch(() => {});
   }, [inApp]);
 
   async function load() {
@@ -72,6 +74,11 @@ export default function Phone({ onGo }) {
 
         {inApp && (
           <>
+            <div className="section-label">此刻</div>
+            <div className="phone-total" style={{ marginBottom: 18 }}>
+              {currentNow ? `正在用：${currentNow.label}` : '还没读到（开权限后会自动上报）'}
+            </div>
+
             <div className="section-label">今天用了多久</div>
 
             {ok === false && (

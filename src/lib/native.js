@@ -49,7 +49,8 @@ export const nativeUsage = {
   available: () => !!plugin('Usage'),
   status: () => plugin('Usage')?.status?.() ?? Promise.resolve({ granted: false }),
   openSettings: () => plugin('Usage')?.openSettings?.() ?? Promise.resolve(),
-  today: () => plugin('Usage')?.today?.() ?? Promise.resolve({ granted: false, apps: [] })
+  today: () => plugin('Usage')?.today?.() ?? Promise.resolve({ granted: false, apps: [] }),
+  current: () => plugin('Usage')?.current?.() ?? Promise.resolve({})
 };
 
 export const nativeNotifier = {
