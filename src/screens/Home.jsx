@@ -5,13 +5,13 @@ import { dailyApi, statusApi } from '../api.js';
 const QUICK = [
   { id: 'study', label: '陪我学', go: 'study' },
   { id: 'listen', label: '一起听', go: 'chat', signal: 'bunny-open-song' },
-  { id: 'read', label: '书架', go: 'read', dot: !!unread?.books },
+  { id: 'read', label: '书架', go: 'read' },
   { id: 'mail', label: '信箱', go: 'mail' },
   { id: 'album', label: '相册', go: 'album' },
-  { id: 'moments', label: '朋友圈', go: 'moments', dot: !!unread?.moments },
+  { id: 'moments', label: '朋友圈', go: 'moments' },
   { id: 'reading', label: '解读', go: 'reading' },
   { id: 'games', label: '一起玩', go: 'games' },
-  { id: 'rituals', label: '日常', go: 'rituals', dot: !!unread?.quests },
+  { id: 'rituals', label: '日常', go: 'rituals' },
   { id: 'memory', label: '记忆', go: 'aerie' }
 ];
 
@@ -38,6 +38,11 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, un
     setDraft('');
   }
   const days = daysSince(startDate);
+  const dotMap = {
+    read: !!unread?.books,
+    moments: !!unread?.moments,
+    rituals: !!unread?.quests
+  };
   return (
     <>
       <div className="home-head">

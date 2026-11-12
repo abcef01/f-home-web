@@ -18,6 +18,34 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- 出错时别白屏：把错误直接写在页面上 -->
+    <script>
+      window.__crash = function (msg) {
+        var el = document.getElementById('boot-error');
+        if (!el) {
+          el = document.createElement('pre');
+          el.id = 'boot-error';
+          el.style.cssText =
+            'position:fixed;left:0;right:0;bottom:0;max-height:50%;overflow:auto;margin:0;padding:16px;' +
+            'background:#2b2620;color:#f3d9c9;font:12px/1.7 monospace;z-index:99999;white-space:pre-wrap;';
+          document.body.appendChild(el);
+        }
+        el.textContent += msg + '\n';
+      };
+      window.addEventListener('error', function (e) {
+        window.__crash('[error] ' + (e.message || e.type) + ' @ ' + (e.filename || '') + ':' + (e.lineno || ''));
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        window.__crash('[promise] ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
+      });
+      setTimeout(function () {
+        var root = document.getElementById('root');
+        if (root && !root.children.length) {
+          window.__crash('[stuck] 3 秒内没有渲染出任何东西');
+        }
+      }, 3000);
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
