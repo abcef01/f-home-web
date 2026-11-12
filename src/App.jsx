@@ -24,6 +24,8 @@ const DEFAULTS = {
   theme: 'cream',
   font: 'serif',
   surface: 'paper', // paper | glass | chat
+  bgGlobal: '',
+  bgChat: '',
   fontSize: 15,
   lineHeight: 1.9,
   letterSpacing: 0.015,
@@ -218,6 +220,10 @@ export default function App() {
     r.style.setProperty('--global-radius', settings.globalRadius + 'px');
     r.style.setProperty('--glass-veil', settings.veil);
     r.style.setProperty('--glass-blur', settings.blur + 'px');
+    if (settings.bgGlobal) r.style.setProperty('--bg-global', 'url("' + settings.bgGlobal + '")');
+    else r.style.removeProperty('--bg-global');
+    if (settings.bgChat) r.style.setProperty('--bg-chat', 'url("' + settings.bgChat + '")');
+    else r.style.removeProperty('--bg-chat');
   }, [settings]);
 
   const chatGlass = settings.surface !== 'paper';

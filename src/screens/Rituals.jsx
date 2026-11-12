@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Quests from '../components/Quests.jsx';
-import { ritualsApi, sleepApi } from '../api.js';
+import { ritualsApi, sleepApi, waterApi } from '../api.js';
 import { daysSince, fmtToday } from '../lib/days.js';
 
 const ITEMS = [
@@ -24,6 +24,8 @@ export default function Rituals({ startDate, onGo }) {
   const [hours, setHours] = useState('');
   const [wakings, setWakings] = useState(0);
   const [saved, setSaved] = useState(false);
+  const [water, setWater] = useState({ goal: 2000, today: { total: 0, items: [] }, days: [] });
+  const [ml, setMl] = useState('');
 
   useEffect(() => {
     ritualsApi.list().then((r) => setAll(r.rituals || {})).catch((e) => setErr(e.message));
@@ -37,6 +39,10 @@ export default function Rituals({ startDate, onGo }) {
         setWakings(today?.wakings ?? 0);
       })
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    waterApi.get().then(setWater).catch(() => {});
   }, []);
 
   const today = all[dayKey()] || {};
@@ -120,6 +126,83 @@ export default function Rituals({ startDate, onGo }) {
             </button>
           );
         })}
+      </div>
+
+      {/* 喝水 */}
+      <div className="group">
+        <div className="gl">喝水</div>
+        <div className="meter">
+          <div
+            className="meter-bar"
+            style={{ width: Math.min(100, Math.round((water.today.total / water.goal) * 100)) + '%' }}
+          />
+        </div>
+        <div className="meter-foot">
+          <span>{water.today.total} ml</span>
+          <span>目标 {water.goal} ml</span>
+        </div>
+
+        <div className="sleep-row">
+          <input
+            className="water-input"
+            value={ml}
+            inputMode="numeric"
+            placeholder="多少 ml"
+            onChange={(e) => setMl(e.target.value)}
+          />
+          <button
+            className="reader-btn"
+            onClick={async () => {
+              const n = Number(ml);
+              if (!n) return;
+              try {
+                setWater(await waterApi.add(n));
+                setMl('');
+              } catch (e) {
+                setErr(e.message);
+              }
+            }}
+          >
+            记一笔
+          </button>
+          {[200, 300, 500].map((n) => (
+            <button
+              key={n}
+              className="reader-btn"
+              onClick={async () => {
+                try {
+                  setWater(await waterApi.add(n));
+                } catch (e) {
+                  setErr(e.message);
+                }
+              }}
+            >
+              +{n}
+            </button>
+          ))}
+        </div>
+
+        {water.today.items.length > 0 && (
+          <div className="water-today">
+            {[...water.today.items].reverse().map((x) => (
+              <span key={x.id} className="water-chip">
+                {new Date(x.at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} · {x.ml} ml
+                <button onClick={async () => setWater(await waterApi.remove(x.id))}>×</button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {water.days.length > 1 && (
+          <div className="sleep-history">
+            {water.days.slice(1, 8).map((d) => (
+              <div className="sleep-line" key={d.date}>
+                <span>{d.date.slice(5)}</span>
+                <span>{d.total} ml</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 睡眠 */}

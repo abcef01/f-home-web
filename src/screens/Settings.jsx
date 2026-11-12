@@ -18,6 +18,36 @@ const THEMES = [
 ];
 
 function Slider({ label, value, min, max, step, onChange, digits = 2 }) {
+  async function pickBg(e, scope) {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    if (f.size > 8 * 1024 * 1024) return alert('图片太大了，8MB 以内');
+
+    const dataUrl = await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result));
+      r.onerror = () => reject(new Error('读取失败'));
+      r.readAsDataURL(f);
+    });
+
+    try {
+      const res = await api.setBg(scope, dataUrl);
+      update(scope === 'chat' ? { bgChat: res.url } : { bgGlobal: res.url });
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function clearBg(scope) {
+    try {
+      await api.setBg(scope, '');
+      update(scope === 'chat' ? { bgChat: '' } : { bgGlobal: '' });
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
   return (
     <div className="slider-row">
       <span className="lb">{label}</span>
@@ -142,6 +172,33 @@ export default function Settings({ settings, update, onGo, onSave, saving, saveM
         <Slider label="气泡" value={s.bubbleAlpha} min={0.15} max={0.9} step={0.01} onChange={(v) => update({ bubbleAlpha: v })} />
         <div className="hint-line" style={{ padding: '6px 0 0' }}>
           纸白越高越像纸、越低越透；模糊只影响玻璃后面的背景。
+        </div>
+
+        <div className="gl" style={{ marginTop: 16 }}>背景图</div>
+        <div className="bg-row">
+          <label className="reader-btn">
+            整屏
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={(e) => pickBg(e, 'global')}
+            />
+          </label>
+          <label className="reader-btn">
+            聊天
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={(e) => pickBg(e, 'chat')}
+            />
+          </label>
+          <button className="reader-btn" onClick={() => clearBg('global')}>清整屏</button>
+          <button className="reader-btn" onClick={() => clearBg('chat')}>清聊天</button>
+        </div>
+        <div className="hint-line" style={{ padding: '6px 0 0' }}>
+          存进你自己的私有存储，链接一小时过期，别处打不开。
         </div>
       </div>
 

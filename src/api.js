@@ -199,6 +199,12 @@ export const ritualsApi = {
   check: (id) => request('/api/rituals/check', { method: 'POST', body: JSON.stringify({ id }) })
 };
 
+export const waterApi = {
+  get: () => request('/api/water'),
+  add: (ml, note) => request('/api/water', { method: 'POST', body: JSON.stringify({ ml, note }) }),
+  remove: (id) => request('/api/water/' + id, { method: 'DELETE' })
+};
+
 export const walletApi = {
   get: () => request('/api/wallet'),
   transfer: (amount, note) => request('/api/wallet/transfer', { method: 'POST', body: JSON.stringify({ amount, note }) }),
