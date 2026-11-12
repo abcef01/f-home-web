@@ -303,6 +303,7 @@ export const diaryApi = {
 
 export const questsApi = {
   list: () => request('/api/quests'),
+  ideateQ: () => request('/api/quests/ideate', { method: 'POST', body: '{}' }),
   create: (title, points) => request('/api/quests/create', { method: 'POST', body: JSON.stringify({ title, points }) }),
   submit: (id, proof) => request('/api/quests/submit', { method: 'POST', body: JSON.stringify({ id, proof }) }),
   review: (id) => request('/api/quests/review', { method: 'POST', body: JSON.stringify({ id }) }),

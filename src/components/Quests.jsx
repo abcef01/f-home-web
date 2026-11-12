@@ -72,6 +72,10 @@ export default function Quests() {
         </div>
       ))}
 
+      <button className="quest-review" disabled={busy} onClick={() => run(() => questsApi.ideateQ())}>
+        让他定一个
+      </button>
+
       <div className="fact-add">
         <input value={title} placeholder="约定一件事，比如：每天喝够水" onChange={(e) => setTitle(e.target.value)} />
         <input
