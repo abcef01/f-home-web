@@ -8,7 +8,7 @@ const QUICK = [
   { id: 'read', label: '书架', go: 'read' },
   { id: 'mail', label: '信箱', go: 'mail' },
   { id: 'album', label: '相册', go: 'album' },
-  { id: 'tarot', label: '塔罗', go: null },
+  { id: 'moments', label: '朋友圈', go: 'moments' },
   { id: 'pet', label: '桌宠', go: null },
   { id: 'games', label: '一起玩', go: 'games' },
   { id: 'rituals', label: '日常', go: 'rituals' },

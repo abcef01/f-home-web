@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Quests from '../components/Quests.jsx';
-import { ritualsApi, sleepApi, waterApi } from '../api.js';
+import { ritualsApi, sleepApi, waterApi, mealsApi } from '../api.js';
 import { daysSince, fmtToday } from '../lib/days.js';
 
 const ITEMS = [
@@ -26,6 +26,8 @@ export default function Rituals({ startDate, onGo }) {
   const [saved, setSaved] = useState(false);
   const [water, setWater] = useState({ goal: 2000, today: { total: 0, items: [] }, days: [] });
   const [ml, setMl] = useState('');
+  const [meals, setMeals] = useState({ today: {}, days: [], slots: [] });
+  const [mealText, setMealText] = useState({});
 
   useEffect(() => {
     ritualsApi.list().then((r) => setAll(r.rituals || {})).catch((e) => setErr(e.message));
@@ -43,6 +45,7 @@ export default function Rituals({ startDate, onGo }) {
 
   useEffect(() => {
     waterApi.get().then(setWater).catch(() => {});
+    mealsApi.get().then(setMeals).catch(() => {});
   }, []);
 
   const today = all[dayKey()] || {};
@@ -126,6 +129,56 @@ export default function Rituals({ startDate, onGo }) {
             </button>
           );
         })}
+      </div>
+
+      {/* 三餐 */}
+      <div className="group">
+        <div className="gl">三餐</div>
+        <div className="meal-list">
+          {(meals.slots || []).map((s) => {
+            const rec = meals.today?.[s.id];
+            return (
+              <div className={'meal-item' + (rec ? ' done' : '')} key={s.id}>
+                <button
+                  className="meal-mark"
+                  onClick={async () => {
+                    const v = await mealsApi.mark(s.id, mealText[s.id] || '', !rec).catch(() => null);
+                    if (v) setMeals(v);
+                  }}
+                >
+                  {s.name}
+                </button>
+                <input
+                  className="meal-input"
+                  placeholder={rec ? '吃了什么（可改）' : '吃了什么（可不填）'}
+                  value={mealText[s.id] ?? rec?.text ?? ''}
+                  onChange={(e) => setMealText((m) => ({ ...m, [s.id]: e.target.value }))}
+                  onBlur={async () => {
+                    if (!rec && !mealText[s.id]) return;
+                    const v = await mealsApi.mark(s.id, mealText[s.id] ?? rec?.text ?? '', true).catch(() => null);
+                    if (v) setMeals(v);
+                  }}
+                />
+                <span className="meal-time">
+                  {rec ? new Date(rec.at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '—'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {meals.days?.length > 1 && (
+          <div className="sleep-history">
+            {meals.days.slice(1, 6).map((d) => (
+              <div className="sleep-line" key={d.date}>
+                <span>{d.date.slice(5)}</span>
+                <span>
+                  {['breakfast', 'lunch', 'dinner'].filter((k) => d[k]).length} 餐
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 喝水 */}

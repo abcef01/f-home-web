@@ -199,6 +199,19 @@ export const ritualsApi = {
   check: (id) => request('/api/rituals/check', { method: 'POST', body: JSON.stringify({ id }) })
 };
 
+export const momentsApi = {
+  list: () => request('/api/moments'),
+  post: (payload) => request('/api/moments', { method: 'POST', body: JSON.stringify(payload) }),
+  like: (id) => request('/api/moments/' + id + '/like', { method: 'POST', body: '{}' }),
+  comment: (id, text) => request('/api/moments/' + id + '/comment', { method: 'POST', body: JSON.stringify({ text }) }),
+  remove: (id) => request('/api/moments/' + id, { method: 'DELETE' })
+};
+
+export const mealsApi = {
+  get: () => request('/api/meals'),
+  mark: (slot, text, eaten) => request('/api/meals', { method: 'POST', body: JSON.stringify({ slot, text, eaten }) })
+};
+
 export const drawApi = {
   guess: (image) => request('/api/vision/guess', { method: 'POST', body: JSON.stringify({ image }) })
 };
