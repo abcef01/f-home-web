@@ -6,7 +6,7 @@
  *   · /api/*：完全不碰，永远走网络（聊天必须实时）
  */
 
-const VERSION = 'bunny-v4';
+const VERSION = 'bunny-v5';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
@@ -74,20 +74,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  /* 静态资源 */
+  /* 静态资源：先网络（保证能拿到新版），断网再退回缓存 */
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
-        .then((res) => {
-          if (res && res.status === 200) {
-            const copy = res.clone();
-            caches.open(VERSION).then((c) => c.put(request, copy)).catch(() => {});
-          }
-          return res;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
+    fetch(request)
+      .then((res) => {
+        if (res && res.status === 200) {
+          const copy = res.clone();
+          caches.open(VERSION).then((c) => c.put(request, copy)).catch(() => {});
+        }
+        return res;
+      })
+      .catch(() => caches.match(request))
   );
 });
 
