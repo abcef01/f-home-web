@@ -3480,9 +3480,12 @@ body::before {
 .game-full { grid-column: 1 / -1; }
 
 /* 首页日常块 */
-.home-rituals { display: flex; gap: 8px; }
+.home-rituals { display: flex; gap: 8px; width: 100%; box-sizing: border-box; }
 .home-ritual {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
   text-align: left;
   background: rgba(255,255,255,0.42);
   border: 1px solid var(--line);

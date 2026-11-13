@@ -27,7 +27,24 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, un
   }, [me]);
 
   React.useEffect(() => {
-    statusApi.get().then(setStatus).catch(() => {});
+    let alive = true;
+    const load = () =>
+      statusApi
+        .get()
+        .then((r) => {
+          if (!alive) return;
+          setStatus(r);
+          try {
+            localStorage.setItem('ta-status', JSON.stringify({ ta: r.ta, at: Date.now() }));
+          } catch {}
+        })
+        .catch(() => {});
+    load();
+    const t = setInterval(load, 45000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
   }, []);
 
   async function saveStatus() {
