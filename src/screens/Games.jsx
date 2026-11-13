@@ -1,6 +1,7 @@
 ﻿import { fishingApi, monoApi, farmApi, burgerApi, pondApi, api } from '../api.js';
 import Slots from './Slots.jsx';
 import { GomokuPanel, TicTacToePanel, RpsPanel, TruthDarePanel, DrawGuessPanel } from '../components/MiniGames.jsx';
+import Tarot from '../components/Tarot.jsx';
 import React, { useEffect, useRef, useState } from 'react';
 
 const GAMES = [
@@ -363,6 +364,7 @@ export default function Games({ onGo }) {
   const [rpsOpen, setRpsOpen] = useState(false);
   const [tdOpen, setTdOpen] = useState(false);
   const [drawOpen, setDrawOpen] = useState(false);
+  const [tarotOpen, setTarotOpen] = useState(false);
 
   /* 把渔获丢进聊天，让它接一句 */
   async function tell(out) {
@@ -380,7 +382,7 @@ export default function Games({ onGo }) {
         </button>
         <div>
           <div className="set-title">一起玩</div>
-          <div className="set-sub">5 个小游戏 · 还有一池鱼</div>
+          <div className="set-sub">6 个小游戏 · 还有一池鱼</div>
         </div>
       </div>
 
@@ -417,6 +419,20 @@ export default function Games({ onGo }) {
             <div className="g-meta">{tdOpen ? '收起' : '抽一张，不许换'}</div>
           </div>
         </div>
+
+        <div className={'game-card' + (tarotOpen ? ' open' : '')} onClick={() => setTarotOpen((v) => !v)}>
+          <span className="g-ico">✶</span>
+          <div>
+            <div className="g-name">塔罗</div>
+            <div className="g-meta">{tarotOpen ? '收起' : '三张：过去 现在 未来'}</div>
+          </div>
+        </div>
+
+        {tarotOpen && (
+          <div className="game-full">
+            <Tarot />
+          </div>
+        )}
 
         <div className={'game-card' + (drawOpen ? ' open' : '')} onClick={() => setDrawOpen((v) => !v)}>
           <span className="g-ico">✎</span>

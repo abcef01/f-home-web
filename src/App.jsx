@@ -87,10 +87,33 @@ export default function App() {
     };
   }, []);
   const KNOWN = ['object', 'home', 'chat', 'read', 'wallet', 'moments', 'favorites', 'reading', 'study', 'memory', 'phone', 'diary', 'aerie', 'settings', 'opening', 'rituals', 'album', 'mail', 'games', 'call'];
-  const [screen, setScreen] = useState(() => {
+  const [callFrom, setCallFrom] = useState('chat');
+  const [screen, setScreenRaw] = useState(() => {
     const h = (window.location.hash || '').replace('#', '');
     return KNOWN.includes(h) && h !== 'object' ? h : 'opening';
   });
+
+  /* 每次切页都写一条历史，这样系统返回键/侧滑能退回上一页 */
+  const setScreen = (next) => {
+    if (typeof next !== 'string' || !next) return;
+    setScreenRaw(next);
+    const want = '#' + next;
+    if (window.location.hash !== want) window.history.pushState(null, '', want);
+  };
+
+  /* 系统返回/浏览器后退时，把界面同步回来 */
+  useEffect(() => {
+    const sync = () => {
+      const h = (window.location.hash || '').replace('#', '');
+      if (KNOWN.includes(h)) setScreenRaw(h);
+    };
+    window.addEventListener('hashchange', sync);
+    window.addEventListener('popstate', sync);
+    return () => {
+      window.removeEventListener('hashchange', sync);
+      window.removeEventListener('popstate', sync);
+    };
+  }, []);
 
   /* 每次改动记一个时间戳：云端与本地的合并以「谁更新」为准 */
   const update = (patch) => setSettings((s) => ({ ...s, ...patch, savedAt: Date.now() }));
@@ -279,19 +302,20 @@ export default function App() {
       home: (
         <Home
           me={me}
+          taName={settings.taName || 'Elliott'}
           homeTitle={homeTitle}
             startDate={settings.startDate}
           onGo={setScreen}
         />
       ),
       call: (
-        <Call voice={settings.voice || {}} taName={settings.taName || 'Elliott'} onClose={() => setScreen('chat')} />
+        <Call voice={settings.voice || {}} taName={settings.taName || 'Elliott'} onClose={() => setScreen(callFrom || 'chat')} />
       ),
       chat: (
         <Chat
           taName={settings.taName || 'Elliott'}
           voice={settings.voice || {}}
-          onCall={() => setScreen('call')}
+          onCall={() => { setCallFrom(screen); setScreen('call'); }}
           onVoiceChange={(v) => setSettings((s) => ({ ...s, voice: v }))}
           glass={chatGlass}
           me={me}

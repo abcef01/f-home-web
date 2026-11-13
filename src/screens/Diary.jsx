@@ -174,7 +174,7 @@ export default function Diary({ me, avatars = {}, showAvatars = true, onGo }) {
             <div className={"note-card " + (n.who === 'me' ? 'me' : 'ta')} key={n.id}>
               <div className="note-text">{n.text}</div>
               <div className="note-meta">
-                {n.who === 'me' ? me : 'Elliott'} · {new Date(n.at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                {n.who === 'me' ? me : 'Elliott'} · {new Date(n.at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }, { hour12: false })}
               </div>
             </div>
           ))}
@@ -224,7 +224,7 @@ export default function Diary({ me, avatars = {}, showAvatars = true, onGo }) {
             </div>
             <div className="story">{e.text}</div>
             <div className="foot">
-              <span>{new Date(e.at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
+              <span>{new Date(e.at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }, { hour12: false })}</span>
               <span onClick={() => like(e.id)} style={{ cursor: 'pointer' }}>
                 {e.likes?.includes('me') ? '♥' : '♡'} {e.likes?.length || 0}
               </span>

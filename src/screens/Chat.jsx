@@ -41,7 +41,7 @@ function moodLine(s) {
   if (connection >= 0.5) return `很想你 · ${mood}`;
   if (connection >= 0.35) return `有点想你 · ${mood}`;
   if (arousal > 0.4) return `静不下来 · ${mood}`;
-  return `在窗边看雨 · ${mood}`;
+  return mood;
 }
 
 /* 单条消息（含可折叠的思考链） */
@@ -335,7 +335,8 @@ export default function Chat({ taName = 'Elliott', voice = {}, onVoiceChange, on
 
   /* 连发：先只存，等你停手了再回 */
   async function send(raw) {
-    const text = String(raw != null ? raw : input).trim();
+    /* 只接受字符串；按钮事件对象不能当文字 */
+    const text = (typeof raw === 'string' ? raw : input).trim();
     if (!text || sending) return;
     setInput('');
     setError('');
@@ -728,7 +729,13 @@ export default function Chat({ taName = 'Elliott', voice = {}, onVoiceChange, on
           <div className="chat-center">
             <div className="chat-name">{(taName || 'Elliott')}</div>
             <div className="chat-sub">
-              <i className="sdot" />
+              <i
+                className="sdot sdot-mood"
+                style={{
+                  background:
+                    (mood?.valence ?? 0) > 0.25 ? '#8fa06b' : (mood?.valence ?? 0) < -0.25 ? '#a8705f' : '#b8a98a'
+                }}
+              />
               {sending ? '正在想…' : moodLine(mood)}
             </div>
           </div>
@@ -941,7 +948,7 @@ export default function Chat({ taName = 'Elliott', voice = {}, onVoiceChange, on
             }}
           />
         </div>
-        <button className="send-btn" onClick={send} disabled={sending || !input.trim()}>
+        <button className="send-btn" onClick={() => send()} disabled={sending || !input.trim()}>
           <svg viewBox="0 0 24 24">
             <path d="M12 19V5M6 11l6-6 6 6" />
           </svg>
@@ -1001,7 +1008,7 @@ export default function Chat({ taName = 'Elliott', voice = {}, onVoiceChange, on
                 return list.slice(-60).map((m) => (
                   <div className="search-hit" key={m.id}>
                     <div className="search-hit-time">
-                      {new Date(m.created_at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {new Date(m.created_at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }, { hour12: false })}
                       <i>{m.role === 'user' ? '你' : (taName || '他')}</i>
                     </div>
                     <div className="search-hit-text">{String(m.content).slice(0, 120)}</div>

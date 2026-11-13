@@ -13,7 +13,7 @@ export default function Favorites({ onGo }) {
   const shown = list.filter((f) => (filter === 'all' ? true : f.type === filter));
 
   function fmt(t) {
-    return new Date(t).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return new Date(t).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }, { hour12: false });
   }
 
   return (

@@ -9,7 +9,7 @@ import { createToneMeter } from '../lib/tone.js';
  * 拨号 → 响铃 → 接通 → 说话 → 挂断 → 摘要
  * 它不是真的打电话，是把这个过程做出来。
  */
-export default function Call({ voice = {}, onClose }) {
+export default function Call({ voice = {}, taName = 'Elliott', onClose }) {
   const [phase, setPhase] = useState('dialing'); // dialing | ringing | talking | ending | done
   const [seconds, setSeconds] = useState(0);
   const [lines, setLines] = useState([]);
@@ -257,25 +257,15 @@ export default function Call({ voice = {}, onClose }) {
   }
 
   async function hangUp() {
-    if (phase !== 'talking') return finish();
-
-    /* 交给它说最后一句，而不是由界面硬切 */
-    recRef.current?.stop();
-    recRef.current = null;
-    stopSpeak();
+    if (phaseRef.current === 'ending' || phaseRef.current === 'done') return;
     setPhase('ending');
-    try {
-      const r = await callApi.turn('（我这边要挂电话了）', true);
-      if (r.reply) {
-        setLines((l) => [...l, { role: 'me', text: '那我先挂了。' }]);
-        setLines((l) => [...l, { role: 'ta', text: r.reply }]);
-        speak(r.reply, { rate: voice.rate || 1, voiceName: voice.name || '' });
-        await new Promise((res) => setTimeout(res, Math.min(20000, 900 + r.reply.length * 200)));
-      }
-    } catch {
-      /* 模型没回也照样挂 */
-    }
-    finish();
+
+    /* 摘要让它慢慢生成，不等 */
+    callApi.end().catch(() => {});
+
+    setTimeout(() => {
+      onClose();
+    }, 400);
   }
 
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
@@ -284,7 +274,7 @@ export default function Call({ voice = {}, onClose }) {
   return (
     <div className="call-overlay">
       <div className="call-top">
-        <div className="call-name">Elliott</div>
+        <div className="call-name">{taName || 'Elliott'}</div>
         <div className="call-state">
           {phase === 'dialing' && '正在拨号…'}
           {phase === 'ringing' && '回铃中…'}
@@ -340,7 +330,7 @@ export default function Call({ voice = {}, onClose }) {
       <div className="call-actions">
         {phase === 'done' ? (
           <button className="call-btn end" onClick={onClose}>
-            挂断
+            返回
           </button>
         ) : (
           <>

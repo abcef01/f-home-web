@@ -13,7 +13,7 @@ const ITEMS = [
 
 const NAME = { morning: '早安', night: '晚安', water: '喝水', meal: '好好吃饭', move: '动一动' };
 const dayKey = (d = new Date()) => d.toLocaleDateString('sv-SE', { timeZone: 'Asia/Shanghai' });
-const hhmm = (ts) => (ts ? new Date(ts).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '');
+const hhmm = (ts) => (ts ? new Date(ts).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }, { hour12: false }) : '');
 
 export default function Rituals({ startDate, onGo }) {
   const [all, setAll] = useState({});
@@ -160,7 +160,7 @@ export default function Rituals({ startDate, onGo }) {
                   }}
                 />
                 <span className="meal-time">
-                  {rec ? new Date(rec.at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '—'}
+                  {rec ? new Date(rec.at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }, { hour12: false }) : '—'}
                 </span>
               </div>
             );
@@ -239,7 +239,7 @@ export default function Rituals({ startDate, onGo }) {
           <div className="water-today">
             {[...water.today.items].reverse().map((x) => (
               <span key={x.id} className="water-chip">
-                {new Date(x.at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} · {x.ml} ml
+                {new Date(x.at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }, { hour12: false })} · {x.ml} ml
                 <button onClick={async () => setWater(await waterApi.remove(x.id))}>×</button>
               </span>
             ))}

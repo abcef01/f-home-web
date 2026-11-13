@@ -3429,3 +3429,52 @@ body::before {
 .boot-blank {
   position: fixed; inset: 0; background: #f4f0e8;
 }
+
+/* 首页入口九宫格 */
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px 8px;
+  padding: 4px 0 8px;
+}
+.quick-cell {
+  position: relative;
+  background: none;
+  border: 0;
+  padding: 8px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-3);
+  font-size: 10.5px;
+  font-family: inherit;
+}
+.quick-cell svg { width: 20px; height: 20px; }
+.quick-cell .dot {
+  position: absolute;
+  top: 6px; right: 14px;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #b4553f;
+}
+
+/* 塔罗 */
+.tarot { padding: 6px 0 14px; }
+.tarot-actions { display: flex; gap: 8px; margin-bottom: 10px; }
+.tarot-cards { display: flex; gap: 8px; margin-top: 10px; }
+.tarot-card {
+  flex: 1;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 8px;
+  background: rgba(255,255,255,0.35);
+}
+.tarot-card.rev { opacity: 0.85; }
+.tarot-pos { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; }
+.tarot-name { font-size: 15px; color: var(--ink); margin: 6px 0 2px; }
+.tarot-dir { font-size: 10px; color: var(--ink-3); }
+.tarot-text { font-size: 11px; line-height: 1.6; color: var(--ink-2); margin-top: 6px; }
+.tarot-reading { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+.tarot-reading-title { font-size: 10px; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.08em; }
+.tarot-reading div:last-child { font-size: 12.5px; line-height: 1.85; color: var(--ink); white-space: pre-wrap; }
+.game-full { grid-column: 1 / -1; }

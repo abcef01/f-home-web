@@ -15,7 +15,7 @@ const QUICK = [
   { id: 'memory', label: '记忆', go: 'aerie' }
 ];
 
-export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, unread = {} }) {
+export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, unread = {}, taName = 'Elliott' }) {
   const [daily, setDaily] = React.useState(null);
   const [status, setStatus] = React.useState({ me: null, ta: null });
   const [editing, setEditing] = React.useState(false);
@@ -96,6 +96,17 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, un
         </div>
       )}
       
+      <div className="section-label">入口</div>
+      <div className="quick-grid">
+        {QUICK.map((q) => (
+          <button className="quick-cell" key={q.id} onClick={() => onGo(q.go)}>
+            <CellIcon id={q.id} />
+            <span>{q.label}</span>
+            {dotMap[q.id] && <i className="dot" />}
+          </button>
+        ))}
+      </div>
+
       <div style={{ height: 18 }} />
     </>
   );

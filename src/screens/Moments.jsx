@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { momentsApi, unreadApi } from '../api.js';
 
-export default function Moments({ onGo, me = 'Bunny', taName = (taName || 'Elliott') }) {
+export default function Moments({ onGo, me = 'Bunny', taName = 'Elliott' }) {
   const [list, setList] = useState([]);
   const [text, setText] = useState('');
   const [img, setImg] = useState(null);
@@ -62,7 +62,7 @@ export default function Moments({ onGo, me = 'Bunny', taName = (taName || 'Ellio
   }
 
   const fmt = (t) =>
-    new Date(t).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    new Date(t).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }, { hour12: false });
 
   return (
     <div className="reader-shell">

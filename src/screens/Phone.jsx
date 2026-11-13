@@ -131,7 +131,7 @@ export default function Phone({ onGo }) {
             </div>
             {health.at && (
               <div className="phone-health-time">
-                {new Date(health.at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })} 识别
+                {new Date(health.at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }, { hour12: false })} 识别
               </div>
             )}
           </div>
