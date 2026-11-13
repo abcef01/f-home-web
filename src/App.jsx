@@ -379,7 +379,6 @@ export default function App() {
   return (
     <>
       <div className="phone">
-        <StatusBar dark={screen === 'opening'} />
 
         {screen === 'opening' ? (
           <Opening onEnter={() => setScreen('home')} />
@@ -406,36 +405,6 @@ export default function App() {
   );
 }
 
-function StatusBar({ dark }) {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 15000);
-    return () => clearInterval(t);
-  }, []);
-  const h = now.getHours() % 12 || 12;
-  const m = String(now.getMinutes()).padStart(2, '0');
-  return (
-    <div className="statusbar">
-      <span>{`${h}:${m}`}</span>
-      <div className="icons">
-        <svg width="15" height="10" viewBox="0 0 15 10" fill="currentColor">
-          <rect x="0" y="6" width="2.4" height="4" rx="0.6" />
-          <rect x="3.6" y="4.2" width="2.4" height="5.8" rx="0.6" />
-          <rect x="7.2" y="2.4" width="2.4" height="7.6" rx="0.6" />
-          <rect x="10.8" y="0.4" width="2.4" height="9.6" rx="0.6" />
-        </svg>
-        <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
-          <path d="M7 9.2 4.4 6.6a3.7 3.7 0 0 1 5.2 0L7 9.2Zm-4.2-4.4a6.6 6.6 0 0 1 8.4 0l-1.1 1.1a5 5 0 0 0-6.2 0L2.8 4.8ZM.6 2.6a9.5 9.5 0 0 1 12.8 0l-1.1 1.1a7.9 7.9 0 0 0-10.6 0L.6 2.6Z" />
-        </svg>
-        <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor">
-          <rect x="0.5" y="0.5" width="17" height="9" rx="2.4" />
-          <rect x="2" y="2" width="12.5" height="6" rx="1.2" fill="currentColor" stroke="none" />
-          <path d="M19.4 3.4v3.2c1-.3 1.4-.9 1.4-1.6s-.4-1.3-1.4-1.6Z" fill="currentColor" stroke="none" />
-        </svg>
-      </div>
-    </div>
-  );
-}
 
 export function TabBar({ tabs, current, onGo, unread = {} }) {
   const icons = {

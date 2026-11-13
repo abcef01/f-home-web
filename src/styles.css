@@ -130,27 +130,13 @@ body {
 }
 
 /* 状态栏 */
-.statusbar {
-  position: relative;
-  z-index: 40;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 26px 0 30px;
-  font-family: var(--font-ui);
-  font-size: 12.5px;
-  letter-spacing: 0.02em;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-  flex: 0 0 auto;
-}
+
 .statusbar .icons { display: flex; align-items: center; gap: 5px; opacity: 0.8; }
 
 /* 屏幕容器 */
 .screen {
   position: absolute;
-  inset: 50px 0 0 0;
+  inset: 0;
   display: none;
   flex-direction: column;
   background: var(--paper);
@@ -1104,7 +1090,7 @@ input[type="range"]::-webkit-slider-thumb {
 /* ============ 06 开屏（有时间线的动画） ============ */
 #opening { background: #0B0D0F; }
 .phone:has(#opening.active) { background: #0B0D0F; }
-.phone:has(#opening.active) .statusbar { color: rgba(255, 255, 255, 0.8); }
+.phone:has(#opening.active) 
 
 #opCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .op-stage { position: absolute; inset: 0; pointer-events: none; }
@@ -1391,8 +1377,7 @@ input[type="range"]::-webkit-slider-thumb {
    ========================================================= */
 .chat--glass .chat-bg { top: -50px; }
 .phone:has(#chat.chat--glass.active) { background: #171B1D; }
-.phone:has(#chat.chat--glass.active) .statusbar { color: rgba(255, 255, 255, 0.86); }
-
+.phone:has(#chat.chat--glass.active) 
 .chat--glass .msg .meta,
 .chat--glass .day-divider,
 .chat--glass .sysline {
@@ -2146,8 +2131,7 @@ body[data-surface="glass"] .stat-strip { overflow: hidden; }
     transform: none;
   }
   .phone::after { display: none; }
-  .statusbar { padding-top: env(safe-area-inset-top); height: calc(50px + env(safe-area-inset-top)); }
-}
+  }
 
 /* =========================================================
    第七章：真实的对话界面与模型选择
@@ -3420,7 +3404,7 @@ body::before {
 .reader-top,
 .aerie-top,
 .home-top {
-  padding-top: max(env(safe-area-inset-top, 0px), 30px) !important;
+  padding-top: 6px;
 }
 .tabbar,
 .composer {
@@ -3495,3 +3479,25 @@ body::before {
 }
 .home-ritual .hr-name { display: block; font-size: 13px; color: var(--ink); }
 .home-ritual .hr-meta { display: block; font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+/* ============ 手机上铺满屏幕，不再用固定 390x844 的框 ============ */
+@media (max-width: 520px) {
+  .phone {
+    width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+  }
+  .legend { display: none; }
+  .screen { border-radius: 0; }
+}
+@media (hover: none) and (pointer: coarse) {
+  .phone {
+    width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .legend { display: none; }
+}
