@@ -236,6 +236,9 @@ export const deviceUsageApi = {
   report: (apps) => request('/api/device/usage', { method: 'POST', body: JSON.stringify({ apps }) })
 };
 
+api.letters = () => request('/api/letters');
+api.writeLetter = (topic) => request('/api/letters/write', { method: 'POST', body: JSON.stringify({ topic }) });
+
 export const healthApi = {
   get: () => request('/api/health'),
   scan: (image) => request('/api/watch', { method: 'POST', body: JSON.stringify({ image, mode: 'health' }) })

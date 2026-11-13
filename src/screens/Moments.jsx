@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { momentsApi, unreadApi } from '../api.js';
 
-export default function Moments({ onGo, me = 'Bunny', taName = 'Elliott' }) {
+export default function Moments({ onGo, me = 'Bunny', taName = 'DeepSeek' }) {
   const [list, setList] = useState([]);
   const [text, setText] = useState('');
   const [img, setImg] = useState(null);
@@ -105,7 +105,7 @@ export default function Moments({ onGo, me = 'Bunny', taName = 'Elliott' }) {
         {list.map((m) => (
           <div className="moment-card" key={m.id}>
             <div className="moment-head">
-              <b>{m.who === 'me' ? me : (taName || 'Elliott')}</b>
+              <b>{m.who === 'me' ? me : (taName || 'DeepSeek')}</b>
               <span>{fmt(m.at)}</span>
             </div>
             {m.text && <div className="moment-text">{m.text}</div>}
@@ -128,7 +128,7 @@ export default function Moments({ onGo, me = 'Bunny', taName = 'Elliott' }) {
 
             {(m.comments || []).map((c) => (
               <div className="moment-comment" key={c.id}>
-                <b>{c.who === 'me' ? me : (taName || 'Elliott')}</b>
+                <b>{c.who === 'me' ? me : (taName || 'DeepSeek')}</b>
                 <span>{c.text}</span>
               </div>
             ))}

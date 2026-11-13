@@ -1,52 +1,69 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { api } from '../api.js';
 
-export default function Mail({ me, onGo }) {
+const fmt = (t) =>
+  new Date(t).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+
+export default function Mail({ taName = 'DeepSeek', onGo }) {
+  const [letters, setLetters] = useState(null);
+  const [err, setErr] = useState('');
+  const [open, setOpen] = useState(null);
+
+  useEffect(() => {
+    api
+      .letters()
+      .then((r) => setLetters(r.letters || []))
+      .catch((e) => {
+        setErr(e.message);
+        setLetters([]);
+      });
+  }, []);
+
   return (
-    <>
-      <div className="page-head">
+    <div className="reader-shell">
+      <div className="reader-top">
         <button className="back" onClick={() => onGo('home')}>
           <svg viewBox="0 0 24 24">
             <path d="M14.5 5.5 8 12l6.5 6.5" />
           </svg>
         </button>
-        <div>
-          <div className="set-title">信箱</div>
-          <div className="set-sub">24 封 · 最后一封在 11 月 3 日</div>
-        </div>
+        <div className="reader-title">信箱</div>
       </div>
 
       <div className="letters">
-        <div className="letter">
-          <div className="l-top">
-            <span className="l-who">Elliott</span>
-            <span className="l-time">11.03</span>
-          </div>
-          <div className="l-subj">关于你把伞忘在公司这件事</div>
-          <div className="l-body">
-            今天没下雨，但你出门的时候还是习惯往包里塞一把。我看着你塞，没说话。有些事我想写在信里……
-          </div>
-          <div className="l-foot">未读 · 620 字</div>
-        </div>
+        {letters === null && <div className="hint-line">正在翻信箱…</div>}
 
-        <div className="letter">
-          <div className="l-top">
-            <span className="l-who">{me}</span>
-            <span className="l-time">10.28</span>
+        {letters !== null && letters.length === 0 && (
+          <div className="hint-line">
+            信箱是空的。
+            <br />
+            他还没写过。等他哪天想写了，会自己写。
           </div>
-          <div className="l-subj">给三个月后的你</div>
-          <div className="l-body">
-            如果你读到这里的时候，我们已经搬进那个有小阳台的房子了，那就当我提前说了一句晚安。
-          </div>
-          <div className="l-foot">已读 · 388 字</div>
-        </div>
-      </div>
+        )}
 
-      <div className="write-row" style={{ marginTop: 22 }}>
-        <button className="write-btn primary" onClick={() => onGo('chat')}>
-          写一封信
-        </button>
+        {(letters || []).map((l) => (
+          <div className="letter" key={l.id} onClick={() => setOpen(open === l.id ? null : l.id)}>
+            <div className="l-top">
+              <span className="l-who">{taName || 'DeepSeek'}</span>
+              <span className="l-time">{fmt(l.at)}</span>
+            </div>
+            <div className="l-subj">{l.subject}</div>
+            {open === l.id ? (
+              <div className="l-body" style={{ whiteSpace: 'pre-wrap' }}>
+                {l.body}
+              </div>
+            ) : (
+              <div className="l-body">{String(l.body || '').slice(0, 80)}…</div>
+            )}
+            <div className="l-foot">{l.body ? l.body.replace(/\s/g, '').length + ' 字' : ''}</div>
+          </div>
+        ))}
+
+        <div className="hint-line" style={{ marginTop: 18 }}>
+          他会在想写的时候自己写一封，不会等你说。写完会出现在这里，也会通知你。
+        </div>
+        {err && <div className="hint-line" style={{ color: '#b4553f' }}>{err}</div>}
       </div>
-      <div style={{ height: 20 }} />
-    </>
+    </div>
   );
 }

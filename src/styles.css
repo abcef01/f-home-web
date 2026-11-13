@@ -3420,7 +3420,7 @@ body::before {
 .reader-top,
 .aerie-top,
 .home-top {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 8px) !important;
+  padding-top: max(env(safe-area-inset-top, 0px), 30px) !important;
 }
 .tabbar,
 .composer {
@@ -3478,3 +3478,17 @@ body::before {
 .tarot-reading-title { font-size: 10px; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.08em; }
 .tarot-reading div:last-child { font-size: 12.5px; line-height: 1.85; color: var(--ink); white-space: pre-wrap; }
 .game-full { grid-column: 1 / -1; }
+
+/* 首页日常块 */
+.home-rituals { display: flex; gap: 8px; }
+.home-ritual {
+  flex: 1;
+  text-align: left;
+  background: rgba(255,255,255,0.42);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 12px;
+  font-family: inherit;
+}
+.home-ritual .hr-name { display: block; font-size: 13px; color: var(--ink); }
+.home-ritual .hr-meta { display: block; font-size: 10px; color: var(--muted); margin-top: 4px; }

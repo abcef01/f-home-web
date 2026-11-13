@@ -115,6 +115,9 @@ export default function App() {
     };
   }, []);
 
+  /* 名字：没填就用模型名 */
+  const taDisplay = (settings.taName || '').trim() || 'DeepSeek';
+
   /* 每次改动记一个时间戳：云端与本地的合并以「谁更新」为准 */
   const update = (patch) => setSettings((s) => ({ ...s, ...patch, savedAt: Date.now() }));
 
@@ -302,18 +305,18 @@ export default function App() {
       home: (
         <Home
           me={me}
-          taName={settings.taName || 'Elliott'}
+          taName={taDisplay}
           homeTitle={homeTitle}
             startDate={settings.startDate}
           onGo={setScreen}
         />
       ),
       call: (
-        <Call voice={settings.voice || {}} taName={settings.taName || 'Elliott'} onClose={() => setScreen(callFrom || 'chat')} />
+        <Call voice={settings.voice || {}} taName={taDisplay} onClose={() => setScreen(callFrom || 'chat')} />
       ),
       chat: (
         <Chat
-          taName={settings.taName || 'Elliott'}
+          taName={taDisplay}
           voice={settings.voice || {}}
           onCall={() => { setCallFrom(screen); setScreen('call'); }}
           onVoiceChange={(v) => setSettings((s) => ({ ...s, voice: v }))}
@@ -329,14 +332,14 @@ export default function App() {
         />
       ),
       diary: <Diary me={me} onGo={setScreen} />,
-      aerie: <Aerie taName={settings.taName || 'Elliott'} me={me} startDate={settings.startDate} avatarUrl={avatars.ta} onGo={setScreen} unread={unread} />,
+      aerie: <Aerie taName={taDisplay} me={me} startDate={settings.startDate} avatarUrl={avatars.ta} onGo={setScreen} unread={unread} />,
       rituals: <Rituals startDate={settings.startDate} onGo={setScreen} />,
       album: <Album onGo={setScreen} />,
       mail: <Mail me={me} onGo={setScreen} />,
       games: <Games onGo={setScreen} />,
       read: <Reader onGo={setScreen} />,
       wallet: <Wallet onGo={setScreen} />,
-      moments: <Moments onGo={setScreen} me={me} taName={settings.taName || 'Elliott'} />,
+      moments: <Moments onGo={setScreen} me={me} taName={taDisplay} />,
       favorites: <Favorites onGo={setScreen} />,
       reading: <Reading onGo={setScreen} />,
       study: <Study onGo={setScreen} />,

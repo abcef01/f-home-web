@@ -9,7 +9,7 @@ import { createToneMeter } from '../lib/tone.js';
  * 拨号 → 响铃 → 接通 → 说话 → 挂断 → 摘要
  * 它不是真的打电话，是把这个过程做出来。
  */
-export default function Call({ voice = {}, taName = 'Elliott', onClose }) {
+export default function Call({ voice = {}, taName = 'DeepSeek', onClose }) {
   const [phase, setPhase] = useState('dialing'); // dialing | ringing | talking | ending | done
   const [seconds, setSeconds] = useState(0);
   const [lines, setLines] = useState([]);
@@ -274,7 +274,7 @@ export default function Call({ voice = {}, taName = 'Elliott', onClose }) {
   return (
     <div className="call-overlay">
       <div className="call-top">
-        <div className="call-name">{taName || 'Elliott'}</div>
+        <div className="call-name">{taName || 'DeepSeek'}</div>
         <div className="call-state">
           {phase === 'dialing' && '正在拨号…'}
           {phase === 'ringing' && '回铃中…'}

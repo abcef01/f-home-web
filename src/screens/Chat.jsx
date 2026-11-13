@@ -170,9 +170,7 @@ export function Message({ m, showAvatars, avatars = {}, watching = false, denied
             {mine
                 ? ' · 你'
                 : m.model
-                ? ` · ${m.model}${m.tokens ? ` · ${m.tokens} tok` : ''}${
-                    m.meta?.cacheHit != null ? ` · 缓存 ${Math.round(m.meta.cacheHit * 100)}%` : ''
-                  }`
+                ? ` · ${m.model} · ${m.tokens || 0} tok · 缓存 ${Math.round((m.meta?.cacheHit ?? 0) * 100)}%`
                 : ''}
           </div>
         </div>
@@ -196,7 +194,7 @@ export function Message({ m, showAvatars, avatars = {}, watching = false, denied
   );
 }
 
-export default function Chat({ taName = 'Elliott', voice = {}, onVoiceChange, onCall, onGo, showAvatars, avatars = {}, watchAllowed = false, watchEvery = 45 }) {
+export default function Chat({ taName = 'DeepSeek', voice = {}, onVoiceChange, onCall, onGo, showAvatars, avatars = {}, watchAllowed = false, watchEvery = 45 }) {
   const [messages, setMessages] = useState([]);
   const [convId, setConvId] = useState(null);
   const [input, setInput] = useState('');
@@ -223,7 +221,13 @@ export default function Chat({ taName = 'Elliott', voice = {}, onVoiceChange, on
   const photoRef = useRef(null);
   const replyTimer = useRef(null);
   const musicRef = useRef(null);
-  const [mood, setMood] = useState(null);
+  const [mood, setMood] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('mood-cache') || 'null');
+    } catch {
+      return null;
+    }
+  });
   const shareRef = useRef(null);
   const videoRef = useRef(null);
   const timerRef = useRef(null);
@@ -315,7 +319,12 @@ export default function Chat({ taName = 'Elliott', voice = {}, onVoiceChange, on
       }
       try {
         const s = await heartbeatApi.state();
-        if (alive) setMood(s);
+        if (alive) {
+        setMood(s);
+        try {
+          localStorage.setItem('mood-cache', JSON.stringify(s));
+        } catch {}
+      }
       } catch {
         /* 同上 */
       }
@@ -728,7 +737,7 @@ export default function Chat({ taName = 'Elliott', voice = {}, onVoiceChange, on
         <div className="chat-who" onClick={() => setSheet('profile')}>
           <AvatarImg who="ta" url={avatars.ta} size="s24" />
           <div className="chat-center">
-            <div className="chat-name">{(taName || 'Elliott')}</div>
+            <div className="chat-name">{(taName || 'DeepSeek')}</div>
             <div className="chat-sub">
               <i
                 className="sdot sdot-mood"
@@ -1025,7 +1034,7 @@ export default function Chat({ taName = 'Elliott', voice = {}, onVoiceChange, on
             <div className="av-row">
               <AvatarImg who="ta" url={avatars.ta} size="s64" />
               <div>
-                <div className="nm">{(taName || 'Elliott')}</div>
+                <div className="nm">{(taName || 'DeepSeek')}</div>
 
               </div>
             </div>

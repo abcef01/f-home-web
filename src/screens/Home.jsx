@@ -16,7 +16,7 @@ const QUICK = [
   { id: 'memory', label: '记忆', go: 'aerie' }
 ];
 
-export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, unread = {}, taName = 'Elliott' }) {
+export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, unread = {}, taName = 'DeepSeek' }) {
   const [daily, setDaily] = React.useState(null);
   const [status, setStatus] = React.useState({ me: null, ta: null });
   const [editing, setEditing] = React.useState(false);
@@ -78,7 +78,7 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, un
           <div>
             <div className="who">
               <i className="sdot" style={{ background: moodColor(status.ta) }} />
-              {taName || 'Elliott'}
+              {taName || 'DeepSeek'}
             </div>
             <div className="what">{status.ta?.mood || ''}</div>
           </div>
@@ -98,6 +98,18 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, un
         </div>
       )}
       
+      <div className="section-label">日常</div>
+      <div className="home-rituals">
+        <button className="home-ritual" onClick={() => onGo('rituals')}>
+          <span className="hr-name">今天</span>
+          <span className="hr-meta">打卡 · 喝水 · 三餐 · 睡眠</span>
+        </button>
+        <button className="home-ritual" onClick={() => onGo('diary')}>
+          <span className="hr-name">手帐</span>
+          <span className="hr-meta">写点今天的</span>
+        </button>
+      </div>
+
       <div className="section-label">入口</div>
       <div className="quick-grid">
         {QUICK.map((q) => (
@@ -115,6 +127,31 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, un
 }
 
 function CellIcon({ id }) {
+  if (id === 'study') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.1">
+        <path d="M4 6.5h16v11H4z" />
+        <path d="M8 10.5h8M8 13.5h5" />
+      </svg>
+    );
+  }
+  if (id === 'moments') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.1">
+        <circle cx="12" cy="12" r="3.2" />
+        <path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2" />
+      </svg>
+    );
+  }
+  if (id === 'reading') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.1">
+        <path d="M12 4.5c-1.8-1-4.2-1.2-6.5-.6v13c2.3-.6 4.7-.4 6.5.6" />
+        <path d="M12 4.5c1.8-1 4.2-1.2 6.5-.6v13c-2.3-.6-4.7-.4-6.5.6" />
+        <path d="M12 4.5v13" />
+      </svg>
+    );
+  }
   if (id === 'read') {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.1">

@@ -2,7 +2,7 @@
 import { walletApi, memoryApi } from '../api.js';
 import { daysSince } from '../lib/days.js';
 
-export default function Aerie({ me, startDate, onGo, unread = {}, taName = 'Elliott' }) {
+export default function Aerie({ me, startDate, onGo, unread = {}, taName = 'DeepSeek' }) {
   const [balance, setBalance] = useState(null);
   const [memCount, setMemCount] = useState(null);
   useEffect(() => {
