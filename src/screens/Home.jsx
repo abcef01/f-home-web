@@ -116,15 +116,19 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, un
       )}
       
       <div className="section-label">日常</div>
-      <div className="home-rituals">
-        <button className="home-ritual" onClick={() => onGo('rituals')}>
-          <span className="hr-name">今天</span>
-          <span className="hr-meta">打卡 · 喝水 · 三餐 · 睡眠</span>
-        </button>
-        <button className="home-ritual" onClick={() => onGo('diary')}>
-          <span className="hr-name">手帐</span>
-          <span className="hr-meta">写点今天的</span>
-        </button>
+      <div className="status-row">
+        <div className="status-card" onClick={() => onGo('rituals')}>
+          <div>
+            <div className="who">今天</div>
+            <div className="what">打卡 · 喝水 · 三餐 · 睡眠</div>
+          </div>
+        </div>
+        <div className="status-card" onClick={() => onGo('diary')}>
+          <div>
+            <div className="who">手帐</div>
+            <div className="what">写点今天的</div>
+          </div>
+        </div>
       </div>
 
       <div className="section-label">入口</div>

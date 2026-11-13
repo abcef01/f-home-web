@@ -303,6 +303,24 @@ export default function Chat({ taName = 'DeepSeek', voice = {}, onVoiceChange, o
     return () => window.removeEventListener('bunny-shared-image', handler);
   }, []);
 
+  /* 他的状态：打开就读，之后每 30 秒同步（和首页同一份） */
+  useEffect(() => {
+    let alive = true;
+    const loadStatus = () =>
+      statusApi
+        .get()
+        .then((r) => {
+          if (alive && r?.ta) setTaStatus(r.ta);
+        })
+        .catch(() => {});
+    loadStatus();
+    const t = setInterval(loadStatus, 30000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, []);
+
   /* 心跳：每 90 秒问一次后端「他现在想说话吗」 */
   useEffect(() => {
     let alive = true;

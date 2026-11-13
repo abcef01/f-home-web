@@ -3463,22 +3463,6 @@ body::before {
 .tarot-reading div:last-child { font-size: 12.5px; line-height: 1.85; color: var(--ink); white-space: pre-wrap; }
 .game-full { grid-column: 1 / -1; }
 
-/* 首页日常块 */
-.home-rituals { display: flex; gap: 8px; width: 100%; box-sizing: border-box; }
-.home-ritual {
-  flex: 1 1 0;
-  min-width: 0;
-  box-sizing: border-box;
-  overflow: hidden;
-  text-align: left;
-  background: rgba(255,255,255,0.42);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 12px 12px;
-  font-family: inherit;
-}
-.home-ritual .hr-name { display: block; font-size: 13px; color: var(--ink); }
-.home-ritual .hr-meta { display: block; font-size: 10px; color: var(--muted); margin-top: 4px; }
 
 /* ============ 手机上铺满屏幕，不再用固定 390x844 的框 ============ */
 @media (max-width: 520px) {
