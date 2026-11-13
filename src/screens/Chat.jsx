@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import { moodColor } from '../lib/mood.js';
-import { api, avatarsApi, stickersApi, watchApi, heartbeatApi, pillApi, favoritesApi } from '../api.js';
+import { api, statusApi, avatarsApi, stickersApi, watchApi, heartbeatApi, pillApi, favoritesApi } from '../api.js';
 import { speak, stopSpeak, listenSupported, speechSupported } from '../lib/speech.js';
 import { analyzeSong } from '../lib/audio-notes.js';
 import { analyzeSing } from '../lib/sing.js';
@@ -221,6 +221,7 @@ export default function Chat({ taName = 'DeepSeek', voice = {}, onVoiceChange, o
   const photoRef = useRef(null);
   const replyTimer = useRef(null);
   const musicRef = useRef(null);
+  const [taStatus, setTaStatus] = useState(null);
   const [mood, setMood] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('mood-cache') || 'null');
@@ -741,9 +742,9 @@ export default function Chat({ taName = 'DeepSeek', voice = {}, onVoiceChange, o
             <div className="chat-sub">
               <i
                 className="sdot sdot-mood"
-                style={{ background: moodColor(mood) }}
+                style={{ background: moodColor(taStatus || mood) }}
               />
-              {sending ? '正在想…' : moodLine(mood)}
+              {sending ? '正在想…' : taStatus?.mood || moodLine(mood)}
             </div>
           </div>
         </div>

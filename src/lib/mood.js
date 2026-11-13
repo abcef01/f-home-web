@@ -20,6 +20,7 @@ const BY_WORD = {
   静不下来: 'arousal',
   有点得意: 'pride',
   在惦记你: 'connection',
+  很想你: 'connection',
   心情不错: 'valence',
   没什么起伏: 'calm'
 };
