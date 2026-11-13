@@ -6,3 +6,7 @@ dist/
 *.log
 .DS_Store
 .tmp/  
+
+.gradle-home/
+.android-home/
+local.properties

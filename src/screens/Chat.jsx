@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
-import { api, stickersApi, watchApi, heartbeatApi, pillApi, favoritesApi } from '../api.js';
+import { api, avatarsApi, stickersApi, watchApi, heartbeatApi, pillApi, favoritesApi } from '../api.js';
 import { speak, stopSpeak, listenSupported, speechSupported } from '../lib/speech.js';
 import { analyzeSong } from '../lib/audio-notes.js';
 import { analyzeSing } from '../lib/sing.js';
@@ -8,7 +8,7 @@ import { refreshLocation } from '../lib/place.js';
 import { listenAmbience } from '../lib/ambience.js';
 import AvatarImg from '../components/AvatarImg.jsx';
 
-const NAME = 'Elliott';
+
 const CACHE_KEY = 'bh_chat_cache';
 
 function saveCache(convId, messages) {
@@ -35,7 +35,7 @@ function fmtTime(iso) {
 
 /* 把积温的数值翻译成一句人话 */
 function moodLine(s) {
-  if (!s) return '在窗边看雨 · 心情 安静';
+  if (!s) return '';
   const { connection = 0, valence = 0, arousal = 0 } = s;
   const mood = valence > 0.3 ? '心情不错' : valence < -0.3 ? '有点低落' : '心情平常';
   if (connection >= 0.5) return `很想你 · ${mood}`;
@@ -46,6 +46,10 @@ function moodLine(s) {
 
 /* 单条消息（含可折叠的思考链） */
 export function Message({ m, showAvatars, avatars = {}, watching = false, denied, onAllowWatch, onDenyWatch, voice = {}, handlers = {} }) {
+  if (m.meta?.system) {
+    return <div className="msg-system">{m.content}</div>;
+  }
+
   const [open, setOpen] = useState(false);
   const [favDone, setFavDone] = useState(false);
 
@@ -126,6 +130,13 @@ export function Message({ m, showAvatars, avatars = {}, watching = false, denied
               <button onClick={() => handlers.onCall && handlers.onCall()}>接听</button>
             </div>
           )}
+          <button
+            className={'msg-fav' + (favDone ? ' on' : '')}
+            onClick={saveFav}
+            title={favDone ? '已收藏' : '收藏这句'}
+          >
+            {favDone ? '★' : '☆'}
+          </button>
           {m.meta?.thought && <ThoughtBlock text={m.meta.thought} />}
           {speechSupported() && msgPlayable(m.content) && <SpeakButton text={m.content} voice={voice} />}
           {m.meta?.surf && (
@@ -184,13 +195,16 @@ export function Message({ m, showAvatars, avatars = {}, watching = false, denied
   );
 }
 
-export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvatars, avatars = {}, watchAllowed = false, watchEvery = 45 }) {
+export default function Chat({ taName = 'Elliott', voice = {}, onVoiceChange, onCall, onGo, showAvatars, avatars = {}, watchAllowed = false, watchEvery = 45 }) {
   const [messages, setMessages] = useState([]);
   const [convId, setConvId] = useState(null);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
-  const [sheet, setSheet] = useState(null); // 'profile' | 'conversations' | null
+  const [sheet, setSheet] = useState(null); // 'profile' | 'conversation' | 'search'
+  const [q, setQ] = useState('');
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [stickers, setStickers] = useState([]);
   const [stickerSheet, setStickerSheet] = useState(false);
@@ -712,7 +726,7 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
         <div className="chat-who" onClick={() => setSheet('profile')}>
           <AvatarImg who="ta" url={avatars.ta} size="s24" />
           <div className="chat-center">
-            <div className="chat-name">{NAME}</div>
+            <div className="chat-name">{(taName || 'Elliott')}</div>
             <div className="chat-sub">
               <i className="sdot" />
               {sending ? '正在想…' : moodLine(mood)}
@@ -725,6 +739,10 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
               <path d="M6.5 4.5h3l1.5 4-2 1.5a10 10 0 005 5l1.5-2 4 1.5v3a1.5 1.5 0 01-1.6 1.5A15.5 15.5 0 014.9 6.1 1.5 1.5 0 016.5 4.5z" />
             </svg>
           </button>
+          {typeof navigator !== 'undefined' &&
+            navigator.mediaDevices &&
+            typeof navigator.mediaDevices.getDisplayMedia === 'function' && (
+            <>
           <button
             className={'icon-btn' + (healthScanning ? ' watching' : '')}
             onClick={startHealthScan}
@@ -748,6 +766,8 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
               <circle cx="12" cy="12" r="2.6" />
             </svg>
           </button>
+            </>
+          )}
 
         </div>
       </header>
@@ -948,6 +968,51 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
         </div>
       )}
 
+      {sheet === 'search' && (
+        <div className="sheet-mask on" onClick={() => setSheet(null)}>
+          <div className="sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="grab" />
+            <div className="search-box">
+              <input
+                className="reading-q"
+                placeholder="搜关键词，比如「手环」「下雨」"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+              <div className="search-dates">
+                <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+                <span>到</span>
+                <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="search-results">
+              {(() => {
+                const kw = q.trim().toLowerCase();
+                const list = messages.filter((m) => {
+                  if (!m.content) return false;
+                  if (kw && !String(m.content).toLowerCase().includes(kw)) return false;
+                  const t = new Date(m.created_at).getTime();
+                  if (from && t < new Date(from + 'T00:00:00').getTime()) return false;
+                  if (to && t > new Date(to + 'T23:59:59').getTime()) return false;
+                  return true;
+                });
+                if (!list.length) return <div className="hint-line">没有找到。</div>;
+                return list.slice(-60).map((m) => (
+                  <div className="search-hit" key={m.id}>
+                    <div className="search-hit-time">
+                      {new Date(m.created_at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      <i>{m.role === 'user' ? '你' : (taName || '他')}</i>
+                    </div>
+                    <div className="search-hit-text">{String(m.content).slice(0, 120)}</div>
+                  </div>
+                ));
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
       {sheet === 'profile' && (
         <div className="sheet-mask on" onClick={() => setSheet(null)}>
           <div className="sheet" onClick={(e) => e.stopPropagation()}>
@@ -955,8 +1020,8 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
             <div className="av-row">
               <AvatarImg who="ta" url={avatars.ta} size="s64" />
               <div>
-                <div className="nm">{NAME}</div>
-                <div className="sb">在窗边看雨 · 心情 安静</div>
+                <div className="nm">{(taName || 'Elliott')}</div>
+
               </div>
             </div>
             <div className="list" style={{ padding: '6px 0 0' }}>
@@ -964,12 +1029,37 @@ export default function Chat({ voice = {}, onVoiceChange, onCall, onGo, showAvat
                 <span className="t">换模型</span>
                 <span className="arrow">›</span>
               </div>
-              {['查看资料', '更换头像', '查找聊天记录'].map((t) => (
-                <div className="list-item" key={t}>
-                  <span className="t">{t}</span>
-                  <span className="arrow">›</span>
-                </div>
-              ))}
+              <label className="list-item" style={{ cursor: 'pointer' }}>
+                <span className="t">更换头像</span>
+                <span className="arrow">›</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = '';
+                    if (!f) return;
+                    try {
+                      const dataUrl = await new Promise((res, rej) => {
+                        const r2 = new FileReader();
+                        r2.onload = () => res(String(r2.result));
+                        r2.onerror = () => rej(new Error('读图失败'));
+                        r2.readAsDataURL(f);
+                      });
+                      const r2 = await avatarsApi.save('ta', dataUrl);
+                      setAvatars?.({ ...avatars, ta: r2.url || r2.avatar?.url || avatars.ta });
+                      setSheet(null);
+                    } catch (err) {
+                      setWatchErr(err.message);
+                    }
+                  }}
+                />
+              </label>
+              <div className="list-item" onClick={() => { setSheet('search'); }}>
+                <span className="t">查找聊天记录</span>
+                <span className="arrow">›</span>
+              </div>
             </div>
           </div>
         </div>

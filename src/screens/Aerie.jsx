@@ -2,7 +2,7 @@
 import { walletApi, memoryApi } from '../api.js';
 import { daysSince } from '../lib/days.js';
 
-export default function Aerie({ me, startDate, onGo, unread = {} }) {
+export default function Aerie({ me, startDate, onGo, unread = {}, taName = 'Elliott' }) {
   const [balance, setBalance] = useState(null);
   const [memCount, setMemCount] = useState(null);
   useEffect(() => {
@@ -20,7 +20,7 @@ export default function Aerie({ me, startDate, onGo, unread = {} }) {
           Aerie
         </div>
         <div className="avatar a-elliott s88" />
-        <div className="aerie-name">Elliott</div>
+        <div className="aerie-name">{taName}</div>
         <div className="aerie-note">Walk gently, stay curious.</div>
         
       </div>

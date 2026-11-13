@@ -21,7 +21,7 @@ import Phone from './screens/Phone.jsx';
 import Slots from './screens/Slots.jsx';
 import Lock from './components/Lock.jsx';
 import InstallHint from './components/InstallHint.jsx';
-import { authApi, uiSettings, avatarsApi, drivesApi, unreadApi } from './api.js';
+import { api, auth, authApi, uiSettings, avatarsApi, drivesApi, unreadApi } from './api.js';
 import { startDeviceReporting } from './lib/device.js';
 import { takeSharedImage } from './lib/share.js';
 import { startLocationSync } from './lib/place.js';
@@ -33,6 +33,7 @@ const DEFAULTS = {
   surface: 'paper', // paper | glass | chat
   bgGlobal: '',
   bgChat: '',
+  taName: 'Elliott',
   fontSize: 15,
   lineHeight: 1.9,
   letterSpacing: 0.015,
@@ -66,6 +67,7 @@ export default function App() {
   const [settings, setSettings] = useState(load);
   /* 口令锁：checking -> ok / locked */
   const [authState, setAuthState] = useState('checking');
+  const [settingsReady, setSettingsReady] = useState(false);
   const [saving, setSaving] = useState(false);
   const [avatars, setAvatars] = useState({});
   const [saveMsg, setSaveMsg] = useState('');
@@ -76,7 +78,11 @@ export default function App() {
       .check()
       .then((r) => alive && setAuthState(r.ok ? 'ok' : 'locked'))
       .catch(() => alive && setAuthState('locked'));
-    return () => {
+    if (authState === 'ok' && !settingsReady) {
+    return <div className="boot-blank" />;
+  }
+
+  return () => {
       alive = false;
     };
   }, []);
@@ -89,6 +95,7 @@ export default function App() {
   /* 每次改动记一个时间戳：云端与本地的合并以「谁更新」为准 */
   const update = (patch) => setSettings((s) => ({ ...s, ...patch, savedAt: Date.now() }));
 
+  /* 先把云端设置拿到再显示主界面，避免先闪一版旧的 */
   /* 进站后拉一次云端设置（换设备/清缓存也能恢复） */
   useEffect(() => {
     if (authState !== 'ok') return;
@@ -100,10 +107,19 @@ export default function App() {
         /* 只有云端比本地新才覆盖，避免旧配置把刚改的冲掉 */
         setSettings((s) => ((v.savedAt || 0) > (s.savedAt || 0) ? { ...s, ...v } : s));
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        if (alive) setSettingsReady(true);
+      });
     return () => {
       alive = false;
     };
+  }, [authState]);
+
+  useEffect(() => {
+    if (authState !== 'ok') return;
+    const t = setTimeout(() => setSettingsReady(true), 1200);
+    return () => clearTimeout(t);
   }, [authState]);
 
   /* 位置：进 App 时静默更新一次，之后每 30 分钟 */
@@ -269,10 +285,11 @@ export default function App() {
         />
       ),
       call: (
-        <Call voice={settings.voice || {}} onClose={() => setScreen('chat')} />
+        <Call voice={settings.voice || {}} taName={settings.taName || 'Elliott'} onClose={() => setScreen('chat')} />
       ),
       chat: (
         <Chat
+          taName={settings.taName || 'Elliott'}
           voice={settings.voice || {}}
           onCall={() => setScreen('call')}
           onVoiceChange={(v) => setSettings((s) => ({ ...s, voice: v }))}
@@ -288,14 +305,14 @@ export default function App() {
         />
       ),
       diary: <Diary me={me} onGo={setScreen} />,
-      aerie: <Aerie me={me} startDate={settings.startDate} avatarUrl={avatars.ta} onGo={setScreen} unread={unread} />,
+      aerie: <Aerie taName={settings.taName || 'Elliott'} me={me} startDate={settings.startDate} avatarUrl={avatars.ta} onGo={setScreen} unread={unread} />,
       rituals: <Rituals startDate={settings.startDate} onGo={setScreen} />,
       album: <Album onGo={setScreen} />,
       mail: <Mail me={me} onGo={setScreen} />,
       games: <Games onGo={setScreen} />,
       read: <Reader onGo={setScreen} />,
       wallet: <Wallet onGo={setScreen} />,
-      moments: <Moments onGo={setScreen} me={me} />,
+      moments: <Moments onGo={setScreen} me={me} taName={settings.taName || 'Elliott'} />,
       favorites: <Favorites onGo={setScreen} />,
       reading: <Reading onGo={setScreen} />,
       study: <Study onGo={setScreen} />,

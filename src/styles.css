@@ -3383,3 +3383,49 @@ body::before {
 .phone-health b { font-size: 20px; font-weight: 400; color: var(--ink); }
 .phone-health span { font-size: 10px; color: var(--muted); margin-left: 4px; }
 .phone-health-time { width: 100%; font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+/* 系统消息（通话摘要等）：不属于谁的气泡 */
+.msg-system {
+  margin: 14px auto;
+  max-width: 78%;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+/* 每条消息右上角的收藏键 */
+.msg-fav {
+  position: absolute;
+  top: 6px; right: 8px;
+  background: none; border: 0; padding: 2px 4px;
+  font-size: 12px; color: var(--muted); opacity: 0.55;
+  cursor: pointer;
+}
+.msg-fav.on { color: #b08a4a; opacity: 1; }
+
+/* 查找聊天记录 */
+.search-box { padding: 8px 16px 4px; }
+.search-dates { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 11px; color: var(--muted); }
+.search-dates input { flex: 1; border: 1px solid var(--line); background: transparent; color: var(--ink); padding: 6px 8px; border-radius: 6px; font-size: 11px; }
+.search-results { max-height: 46vh; overflow-y: auto; padding: 6px 16px 20px; }
+.search-hit { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.search-hit-time { font-size: 10px; color: var(--muted); }
+.search-hit-time i { font-style: normal; margin-left: 6px; color: var(--ink-3); }
+.search-hit-text { font-size: 12px; color: var(--ink); margin-top: 3px; }
+
+/* 全屏时避开刘海和状态栏 */
+.chat-head,
+.reader-top,
+.aerie-top,
+.home-top {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 8px) !important;
+}
+.tabbar,
+.composer {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px) !important;
+}
+.boot-blank {
+  position: fixed; inset: 0; background: #f4f0e8;
+}

@@ -75,9 +75,9 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, un
         </div>
         <div className="status-card">
           <div>
-            <div className="who">Elliott</div>
+            <div className="who">{taName || 'Elliott'}</div>
             <div className="what">
-              {status.ta ? `${status.ta.doing || '在这待着'}${status.ta.mood ? ' · ' + status.ta.mood : ''}` : '不知道在做什么'}
+              {status.ta?.mood || ''}
             </div>
           </div>
         </div>
@@ -95,26 +95,7 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, un
           <button onClick={saveStatus}>保存</button>
         </div>
       )}
-
-      <div className="section-label">今日</div>
-      <div className="today-row">
-        <div className="today-item" onClick={() => onGo('rituals')}>
-          <b>7h 20m</b>
-          <i>睡眠</i>
-        </div>
-        <div className="today-item" onClick={() => onGo('rituals')}>
-          <b>1,250ml</b>
-          <i>喝水</i>
-        </div>
-        <div className="today-item" onClick={() => onGo('rituals')}>
-          <b>2 / 3</b>
-          <i>三餐</i>
-        </div>
-        <div className="today-item" onClick={() => onGo('rituals')}>
-          <b>18°</b>
-          <i>天气</i>
-        </div>
-      </div>
+      
       <div style={{ height: 18 }} />
     </>
   );

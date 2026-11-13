@@ -77,6 +77,19 @@ export default function Settings({ settings, update, onGo, onSave, saving, saveM
       </div>
 
       <div className="group">
+        <div className="gl">他的名字</div>
+        <input
+          className="reading-q"
+          value={s.taName || ''}
+          placeholder="Elliott"
+          onChange={(e) => update({ taName: e.target.value.slice(0, 20) })}
+        />
+        <div className="hint-line" style={{ padding: '6px 0 0' }}>
+          空着就显示 Elliott。改完聊天、状态、朋友圈都会用这个名字。
+        </div>
+      </div>
+
+      <div className="group">
         <div className="gl">模型</div>
         <ModelPicker />
       </div>

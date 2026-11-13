@@ -16,6 +16,7 @@ import Reader from '../src/screens/Reader.jsx';
 import Album from '../src/screens/Album.jsx';
 import Settings from '../src/screens/Settings.jsx';
 import Phone from '../src/screens/Phone.jsx';
+import App from '../src/App.jsx';
 
 const noop = () => {};
 const MessageSample = () => (
@@ -29,6 +30,7 @@ const MessageSample = () => (
 );
 
 const screens = {
+  App: <App />,
   Messages: <MessageSample />,
   Chat: <Chat me="Bunny" onGo={noop} onCall={noop} avatars={{}} />,
   Home: <Home me="Bunny" homeTitle="Bunny's Home" startDate="2025-02-01" onGo={noop} unread={{}} />,
