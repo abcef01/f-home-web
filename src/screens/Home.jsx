@@ -40,7 +40,7 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, un
         })
         .catch(() => {});
     load();
-    const t = setInterval(load, 45000);
+    const t = setInterval(load, 30000);
     return () => {
       alive = false;
       clearInterval(t);

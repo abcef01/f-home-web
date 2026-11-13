@@ -744,7 +744,7 @@ export default function Chat({ taName = 'DeepSeek', voice = {}, onVoiceChange, o
                 className="sdot sdot-mood"
                 style={{ background: moodColor(taStatus || mood) }}
               />
-              {sending ? '正在想…' : taStatus?.mood || moodLine(mood)}
+              {sending ? '正在想…' : taStatus?.mood || ''}
             </div>
           </div>
         </div>
