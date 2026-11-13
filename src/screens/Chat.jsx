@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
+import { moodColor } from '../lib/mood.js';
 import { api, avatarsApi, stickersApi, watchApi, heartbeatApi, pillApi, favoritesApi } from '../api.js';
 import { speak, stopSpeak, listenSupported, speechSupported } from '../lib/speech.js';
 import { analyzeSong } from '../lib/audio-notes.js';
@@ -731,10 +732,7 @@ export default function Chat({ taName = 'Elliott', voice = {}, onVoiceChange, on
             <div className="chat-sub">
               <i
                 className="sdot sdot-mood"
-                style={{
-                  background:
-                    (mood?.valence ?? 0) > 0.25 ? '#8fa06b' : (mood?.valence ?? 0) < -0.25 ? '#a8705f' : '#b8a98a'
-                }}
+                style={{ background: moodColor(mood) }}
               />
               {sending ? '正在想…' : moodLine(mood)}
             </div>

@@ -1,5 +1,6 @@
 ﻿import React from 'react';
 import { daysSince, fmtSince } from '../lib/days.js';
+import { moodColor } from '../lib/mood.js';
 import { dailyApi, statusApi } from '../api.js';
 
 const QUICK = [
@@ -73,12 +74,13 @@ export default function Home({ me, homeTitle, startDate = '2025-02-01', onGo, un
             <div className="what">{status.me?.text || '点一下设置状态'}</div>
           </div>
         </div>
-        <div className="status-card">
+        <div className="status-card" style={{ borderColor: moodColor(status.ta) }}>
           <div>
-            <div className="who">{taName || 'Elliott'}</div>
-            <div className="what">
-              {status.ta?.mood || ''}
+            <div className="who">
+              <i className="sdot" style={{ background: moodColor(status.ta) }} />
+              {taName || 'Elliott'}
             </div>
+            <div className="what">{status.ta?.mood || ''}</div>
           </div>
         </div>
       </div>
